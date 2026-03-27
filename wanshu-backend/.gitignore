@@ -28,3 +28,6 @@ target/
 ### Logs ###
 *.log
 logs/
+
+### 本地敏感配置 ###
+**/application-local.yml

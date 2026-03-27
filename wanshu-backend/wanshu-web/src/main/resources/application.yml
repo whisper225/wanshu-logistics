@@ -5,19 +5,33 @@ spring:
   application:
     name: wanshu-logistics
   profiles:
-    active: dev
+    active: dev,local
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/wanshu_logistics?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: root
-    password: root
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
 
   data:
     redis:
       host: localhost
       port: 6379
       database: 0
+    mongodb:
+      uri: mongodb://localhost:27017/wanshu_logistics
+    neo4j:
+      uri: bolt://localhost:7687
+      authentication:
+        username: ${NEO4J_USERNAME:neo4j}
+        password: ${NEO4J_PASSWORD:neo4j}
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: /
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -51,3 +65,20 @@ knife4j:
 logging:
   level:
     com.wanshu: debug
+
+# 阿里云 OSS
+aliyun:
+  oss:
+    endpoint: https://oss-cn-beijing.aliyuncs.com
+    access-key-id: ${OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+    bucket-name: wanshu-logistics
+    url-prefix: https://wanshu-logistics.oss-cn-beijing.aliyuncs.com
+
+# Coze AI
+coze:
+  api-base-url: https://api.coze.cn
+  access-token: ${COZE_ACCESS_TOKEN:}
+  customer-bot-id: ${COZE_CUSTOMER_BOT_ID:}
+  dispatch-bot-id: ${COZE_DISPATCH_BOT_ID:}
+  timeout: 60

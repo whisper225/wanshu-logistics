@@ -36,6 +36,8 @@
         <sa-token.version>1.38.0</sa-token.version>
         <hutool.version>5.8.27</hutool.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <aliyun-oss.version>3.17.4</aliyun-oss.version>
+        <xxl-job.version>2.4.1</xxl-job.version>
     </properties>
 
     <dependencyManagement>
@@ -105,6 +107,20 @@
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- 阿里云 OSS -->
+            <dependency>
+                <groupId>com.aliyun.oss</groupId>
+                <artifactId>aliyun-sdk-oss</artifactId>
+                <version>${aliyun-oss.version}</version>
+            </dependency>
+
+            <!-- XXL-JOB -->
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxl-job.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
