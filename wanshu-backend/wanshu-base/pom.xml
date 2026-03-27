@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.wanshu</groupId>
+        <artifactId>wanshu-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wanshu-base</artifactId>
+    <name>wanshu-base</name>
+    <description>基础数据 - 机构管理、运费管理、车型管理、车辆管理</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.wanshu</groupId>
+            <artifactId>wanshu-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.wanshu</groupId>
+            <artifactId>wanshu-model</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
