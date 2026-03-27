@@ -23,6 +23,11 @@
             <groupId>com.wanshu</groupId>
             <artifactId>wanshu-model</artifactId>
         </dependency>
+        <!-- Neo4j -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-neo4j</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
