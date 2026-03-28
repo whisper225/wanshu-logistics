@@ -1,6 +1,8 @@
 package com.wanshu.model.entity.base;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.wanshu.model.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 @TableName("base_organ")
 public class BaseOrgan extends BaseEntity {
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long parentId;
     private String organName;
     private Integer organType;

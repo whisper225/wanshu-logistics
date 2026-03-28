@@ -51,6 +51,15 @@ public class SysUserService {
         return userMapper.selectOne(wrapper);
     }
 
+    public SysUser getByPhone(String phone) {
+        if (!StringUtils.hasText(phone)) {
+            return null;
+        }
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysUser::getPhone, phone);
+        return userMapper.selectOne(wrapper);
+    }
+
     @Transactional
     public void create(SysUser user) {
         SysUser existing = getByUsername(user.getUsername());

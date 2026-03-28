@@ -1,5 +1,5 @@
 import { request } from '@/utils/request'
-import type { PricingTemplate, PageResult } from '@/types'
+import type { EconomicZoneItem, PricingTemplate, PageResult } from '@/types'
 
 export const pricingApi = {
   getList(params?: {
@@ -8,33 +8,55 @@ export const pricingApi = {
     pageNum?: number
     pageSize?: number
   }) {
-    return request.get<PageResult<PricingTemplate>>('/pricing/templates', { params })
+    const typeNum =
+      params?.type && /^\d+$/.test(String(params.type)) ? Number(params.type) : undefined
+    return request.get<PageResult<PricingTemplate>>('/base/freight/page', {
+      params: {
+        pageNum: params?.pageNum,
+        pageSize: params?.pageSize,
+        name: params?.name,
+        type: typeNum
+      }
+    })
+  },
+
+  getEconomicZones() {
+    return request.get<EconomicZoneItem[]>('/base/freight/economic-zones')
   },
 
   getDetail(id: string) {
-    return request.get<PricingTemplate>(`/pricing/templates/${id}`)
+    return request.get<PricingTemplate>(`/base/freight/${id}`)
   },
 
   create(data: Partial<PricingTemplate>) {
-    return request.post<PricingTemplate>('/pricing/templates', data)
+    return request.post<void>('/base/freight', data)
   },
 
   update(id: string, data: Partial<PricingTemplate>) {
-    return request.put<PricingTemplate>(`/pricing/templates/${id}`, data)
+    return request.put<void>(`/base/freight/${id}`, data)
   },
 
   delete(id: string) {
-    return request.delete(`/pricing/templates/${id}`)
+    return request.delete<void>(`/base/freight/${id}`)
   },
 
   calculate(params: {
-    fromProvince: string
-    fromCity: string
-    toProvince: string
-    toCity: string
+    templateId: string
     weight: number
-    volume: number
+    volume?: number
+    length?: number
+    width?: number
+    height?: number
   }) {
-    return request.post<{ fee: number; templateName: string }>('/pricing/calculate', params)
+    return request.get<Record<string, unknown>>('/base/freight/calculate', {
+      params: {
+        templateId: params.templateId,
+        weight: params.weight,
+        volume: params.volume,
+        length: params.length,
+        width: params.width,
+        height: params.height
+      }
+    })
   }
 }

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -17,23 +18,35 @@ public class DispatchConfigService {
 
     public List<DispatchConfig> listAll() {
         return configMapper.selectList(new LambdaQueryWrapper<DispatchConfig>()
-                .orderByAsc(DispatchConfig::getConfigKey));
+                .orderByAsc(DispatchConfig::getId));
     }
 
-    public DispatchConfig getByKey(String key) {
+    /**
+     * 根据机构ID查询调度配置
+     */
+    public DispatchConfig getByOrganId(Long organId) {
         return configMapper.selectOne(
-                new LambdaQueryWrapper<DispatchConfig>().eq(DispatchConfig::getConfigKey, key));
+                new LambdaQueryWrapper<DispatchConfig>().eq(DispatchConfig::getOrganId, organId));
     }
 
     @Transactional
     public void save(DispatchConfig config) {
-        DispatchConfig existing = getByKey(config.getConfigKey());
-        if (existing != null) {
-            existing.setConfigValue(config.getConfigValue());
-            existing.setDescription(config.getDescription());
-            configMapper.updateById(existing);
+        if (config.getId() != null) {
+            config.setUpdatedTime(LocalDateTime.now());
+            configMapper.updateById(config);
         } else {
-            configMapper.insert(config);
+            // 按机构ID查询是否已有配置
+            DispatchConfig existing = config.getOrganId() != null ? getByOrganId(config.getOrganId()) : null;
+            if (existing != null) {
+                existing.setLatestDispatchHour(config.getLatestDispatchHour());
+                existing.setMaxAssignTime(config.getMaxAssignTime());
+                existing.setPriorityFirst(config.getPriorityFirst());
+                existing.setPrioritySecond(config.getPrioritySecond());
+                existing.setUpdatedTime(LocalDateTime.now());
+                configMapper.updateById(existing);
+            } else {
+                configMapper.insert(config);
+            }
         }
     }
 

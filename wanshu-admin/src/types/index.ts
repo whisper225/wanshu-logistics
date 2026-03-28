@@ -50,18 +50,29 @@ export interface ServiceArea {
   }[]
 }
 
+/** 与后端 BaseFreightTemplate + economicZoneIds 一致 */
 export interface PricingTemplate {
+  id?: string
+  templateName: string
+  /** 1同城 2省内 3跨省 4经济区互寄 */
+  templateType: number
+  firstWeight: number
+  firstWeightPrice: number
+  extraWeight: number
+  extraWeightPrice: number
+  /** 可选；不填则按类型/经济区默认轻抛 */
+  lightThrowRatio?: number | null
+  status?: number
+  economicZoneIds?: string[]
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface EconomicZoneItem {
   id: string
-  name: string
-  type: 'SAME_CITY' | 'SAME_PROVINCE' | 'CROSS_PROVINCE' | 'ECONOMIC_ZONE'
-  baseWeight: number
-  basePrice: number
-  additionalWeightPrice: number
-  baseVolume: number
-  additionalVolumePrice: number
-  status: 'ACTIVE' | 'INACTIVE'
-  createdAt: string
-  updatedAt: string
+  zoneName: string
+  provinces: string
+  lightThrowRatio?: number
 }
 
 export interface VehicleType {
@@ -117,6 +128,8 @@ export interface Courier {
   serviceArea?: ServiceArea
   status: 'ACTIVE' | 'INACTIVE'
   createdAt: string
+  /** 与后端 emp_courier.workStatus 一致 */
+  workStatus?: number
 }
 
 export interface Driver {
@@ -131,11 +144,9 @@ export interface Driver {
   vehicleTypes: string[]
   vehicleId?: string
   vehiclePlate?: string
-  workSchedule: {
-    mode: 'CONTINUOUS' | 'WEEKLY'
-    schedule: string
-  }
   status: 'ACTIVE' | 'INACTIVE'
+  /** 与后端 emp_driver.workStatus 一致 */
+  workStatus?: number
   licenseInfo?: {
     licenseNumber: string
     licenseType: string
@@ -144,20 +155,6 @@ export interface Driver {
     images: string[]
   }
   createdAt: string
-}
-
-export interface Schedule {
-  id: string
-  employeeId: string
-  employeeName: string
-  employeeType: 'COURIER' | 'DRIVER'
-  mode: 'CONTINUOUS' | 'WEEKLY'
-  workPattern: string
-  workDays: string[]
-  restDays: string[]
-  startDate: string
-  endDate?: string
-  status: 'ACTIVE' | 'INACTIVE'
 }
 
 export interface Route {

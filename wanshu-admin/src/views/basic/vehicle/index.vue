@@ -168,7 +168,7 @@ const handleSubmit = async () => {
   })
 }
 
-const handleBindDriver = (row: any) => {
+const handleBindDriver = (_row: any) => {
   ElMessage.info('司机绑定功能将在员工管理模块完成后启用')
 }
 

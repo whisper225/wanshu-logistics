@@ -1,5 +1,5 @@
 import { request } from '@/utils/request'
-import type { Courier, Driver, Schedule, PageResult } from '@/types'
+import type { Courier, Driver, PageResult } from '@/types'
 
 export const employeeApi = {
   getCourierList(params?: {
@@ -7,18 +7,39 @@ export const employeeApi = {
     name?: string
     phone?: string
     organizationId?: string
+    organId?: number
     pageNum?: number
     pageSize?: number
+    workStatus?: number
   }) {
-    return request.get<PageResult<Courier>>('/employees/couriers', { params })
+    return request.get<PageResult<Courier>>('/emp/courier/page', {
+      params: {
+        pageNum: params?.pageNum,
+        pageSize: params?.pageSize,
+        organId: params?.organId ?? (params?.organizationId ? Number(params.organizationId) : undefined),
+        workStatus: params?.workStatus
+      }
+    })
   },
 
   getCourierDetail(id: string) {
-    return request.get<Courier>(`/employees/couriers/${id}`)
+    return request.get<Courier>(`/emp/courier/${id}`)
   },
 
-  updateCourierServiceArea(id: string, serviceArea: any) {
-    return request.put(`/employees/couriers/${id}/service-area`, serviceArea)
+  updateCourier(id: string, data: Partial<Courier>) {
+    return request.put<void>(`/emp/courier/${id}`, data)
+  },
+
+  createCourier(data: Partial<Courier>) {
+    return request.post<void>('/emp/courier', data)
+  },
+
+  deleteCourier(id: string) {
+    return request.delete<void>(`/emp/courier/${id}`)
+  },
+
+  updateCourierServiceArea(id: string, scopes: { provinceId?: number; cityId?: number; countyId?: number }[]) {
+    return request.put<void>(`/emp/courier/${id}/scopes`, scopes)
   },
 
   getDriverList(params?: {
@@ -26,47 +47,42 @@ export const employeeApi = {
     name?: string
     phone?: string
     organizationId?: string
+    organId?: number
     pageNum?: number
     pageSize?: number
+    workStatus?: number
   }) {
-    return request.get<PageResult<Driver>>('/employees/drivers', { params })
+    return request.get<PageResult<Driver>>('/emp/driver/page', {
+      params: {
+        pageNum: params?.pageNum,
+        pageSize: params?.pageSize,
+        organId: params?.organId ?? (params?.organizationId ? Number(params.organizationId) : undefined),
+        workStatus: params?.workStatus
+      }
+    })
   },
 
   getDriverDetail(id: string) {
-    return request.get<Driver>(`/employees/drivers/${id}`)
+    return request.get<Driver>(`/emp/driver/${id}`)
   },
 
   updateDriver(id: string, data: Partial<Driver>) {
-    return request.put<Driver>(`/employees/drivers/${id}`, data)
+    return request.put<void>(`/emp/driver/${id}`, data)
+  },
+
+  createDriver(data: Partial<Driver>) {
+    return request.post<void>('/emp/driver', data)
+  },
+
+  deleteDriver(id: string) {
+    return request.delete<void>(`/emp/driver/${id}`)
   },
 
   bindVehicle(driverId: string, vehicleId: string) {
-    return request.post(`/employees/drivers/${driverId}/vehicle`, { vehicleId })
+    return request.post<void>(`/base/vehicle/${vehicleId}/drivers/${driverId}`)
   },
 
-  unbindVehicle(driverId: string) {
-    return request.delete(`/employees/drivers/${driverId}/vehicle`)
-  },
-
-  getScheduleList(params?: {
-    employeeName?: string
-    mode?: string
-    date?: string
-    pageNum?: number
-    pageSize?: number
-  }) {
-    return request.get<PageResult<Schedule>>('/employees/schedules', { params })
-  },
-
-  createSchedule(data: Partial<Schedule>) {
-    return request.post<Schedule>('/employees/schedules', data)
-  },
-
-  updateSchedule(id: string, data: Partial<Schedule>) {
-    return request.put<Schedule>(`/employees/schedules/${id}`, data)
-  },
-
-  deleteSchedule(id: string) {
-    return request.delete(`/employees/schedules/${id}`)
+  unbindVehicle(driverId: string, vehicleId: string) {
+    return request.delete<void>(`/base/vehicle/${vehicleId}/drivers/${driverId}`)
   }
 }

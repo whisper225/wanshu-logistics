@@ -70,7 +70,7 @@ public class DispatchLineService {
         return tripMapper.selectList(
                 new LambdaQueryWrapper<DispatchTrip>()
                         .eq(DispatchTrip::getLineId, lineId)
-                        .orderByAsc(DispatchTrip::getDepartureTime));
+                        .orderByAsc(DispatchTrip::getDepartTime));
     }
 
     @Transactional

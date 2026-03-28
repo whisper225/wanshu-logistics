@@ -14,6 +14,9 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,14 @@ public class BizWaybillService {
             throw new BusinessException(ResultCode.DATA_NOT_EXIST);
         }
         return waybill;
+    }
+
+    /**
+     * 物流轨迹（文档：MongoDB 存储；当前默认空列表，接入 Mongo 后在此查询）。
+     */
+    public List<Map<String, Object>> listTrack(Long waybillId) {
+        getById(waybillId);
+        return Collections.emptyList();
     }
 
     @Transactional

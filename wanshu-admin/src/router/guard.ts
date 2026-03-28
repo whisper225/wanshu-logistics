@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user'
 NProgress.configure({ showSpinner: false })
 
 export function setupRouterGuard(router: Router) {
-  router.beforeEach(async (to, from, next) => {
+  router.beforeEach(async (to, _from, next) => {
     NProgress.start()
     
     const userStore = useUserStore()

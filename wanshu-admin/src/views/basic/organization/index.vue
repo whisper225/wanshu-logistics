@@ -1,163 +1,149 @@
 <template>
   <PageContainer title="机构管理">
-    <el-row :gutter="20">
-      <el-col :span="8">
-        <el-card>
-          <template #header>
-            <div class="card-header">
-              <span>机构列表</span>
-              <el-input
-                v-model="searchKeyword"
-                placeholder="搜索机构"
-                size="small"
-                style="width: 200px"
-                clearable
-                @input="handleSearch"
-              >
-                <template #prefix>
-                  <el-icon><Search /></el-icon>
-                </template>
-              </el-input>
-            </div>
-          </template>
-          <el-tree
-            :data="organizationTree"
-            :props="{ label: 'name', children: 'children' }"
-            :expand-on-click-node="false"
-            :filter-node-method="filterNode"
-            ref="treeRef"
-            @node-click="handleNodeClick"
-            highlight-current
-          >
-            <template #default="{ node, data }">
-              <span class="tree-node">
-                <span>{{ node.label }}</span>
-                <el-tag size="small" type="info">{{ getOrganizationTypeLabel(data.type) }}</el-tag>
-              </span>
-            </template>
-          </el-tree>
-        </el-card>
-      </el-col>
-      <el-col :span="16">
-        <el-card v-if="currentOrg">
-          <template #header>
-            <div class="card-header">
-              <span>机构信息</span>
-              <el-button v-if="!isEditing" type="primary" size="small" @click="handleEdit">编辑</el-button>
-              <div v-else>
-                <el-button type="primary" size="small" @click="handleSave">保存</el-button>
-                <el-button size="small" @click="handleCancel">取消</el-button>
+    <el-alert type="info" show-icon :closable="false" class="tip">
+      机构数据保存在 MySQL，保存后会同步到 Neo4j。树状视图便于浏览层级；「列表维护」支持分页与批量检索。
+    </el-alert>
+
+    <el-tabs v-model="activeTab" class="organ-tabs" @tab-change="onTabChange">
+      <el-tab-pane label="树状视图" name="tree">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-card>
+              <template #header>
+                <div class="card-header">
+                  <span>机构树</span>
+                  <el-input
+                    v-model="searchKeyword"
+                    placeholder="搜索机构"
+                    size="small"
+                    style="width: 200px"
+                    clearable
+                    @input="handleTreeFilter"
+                  >
+                    <template #prefix>
+                      <el-icon><Search /></el-icon>
+                    </template>
+                  </el-input>
+                </div>
+              </template>
+              <div class="tree-actions">
+                <el-button type="primary" size="small" @click="organDialogRef?.openCreateTop()">新增顶级机构</el-button>
               </div>
-            </div>
-          </template>
-          <el-form :model="formData" label-width="120px" :disabled="!isEditing">
-            <el-form-item label="机构名称">
-              <el-input v-model="formData.name" />
-            </el-form-item>
-            <el-form-item label="机构类型">
-              <el-select v-model="formData.type" placeholder="请选择">
-                <el-option label="总公司" value="HEADQUARTERS" />
-                <el-option label="分公司" value="BRANCH" />
-                <el-option label="一级转运中心" value="PRIMARY_HUB" />
-                <el-option label="二级分拣中心" value="SECONDARY_HUB" />
-                <el-option label="营业部" value="STATION" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="机构地址">
-              <el-cascader
-                v-model="addressValue"
-                :options="addressOptions"
-                placeholder="请选择省市区"
-                style="width: 100%"
-              />
-            </el-form-item>
-            <el-form-item label="详细地址">
-              <el-input v-model="formData.address.detail" />
-            </el-form-item>
-            <el-form-item label="机构负责人">
-              <el-input v-model="formData.manager" maxlength="5" />
-            </el-form-item>
-            <el-form-item label="负责人电话">
-              <el-input v-model="formData.managerPhone" maxlength="11" />
-            </el-form-item>
-            <el-form-item label="机构对接人">
-              <el-input v-model="formData.contact" maxlength="5" />
-            </el-form-item>
-            <el-form-item label="对接人电话">
-              <el-input v-model="formData.contactPhone" maxlength="11" />
-            </el-form-item>
-            <el-form-item label="经度">
-              <el-input-number v-model="formData.longitude" :precision="6" :min="-180" :max="180" />
-              <el-radio-group v-model="formData.longitudeDirection" style="margin-left: 10px">
-                <el-radio label="E">东经</el-radio>
-                <el-radio label="W">西经</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="纬度">
-              <el-input-number v-model="formData.latitude" :precision="6" :min="-90" :max="90" />
-              <el-radio-group v-model="formData.latitudeDirection" style="margin-left: 10px">
-                <el-radio label="N">北纬</el-radio>
-                <el-radio label="S">南纬</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-form>
-          
-          <el-divider />
-          
-          <div class="employee-section">
-            <h4>员工信息</h4>
-            <el-table :data="employees" style="width: 100%">
-              <el-table-column prop="name" label="姓名" />
-              <el-table-column prop="phone" label="电话" />
-              <el-table-column prop="role" label="角色" />
-              <el-table-column prop="createdAt" label="加入时间" />
-            </el-table>
-          </div>
-        </el-card>
-        <el-empty v-else description="请选择机构" />
-      </el-col>
-    </el-row>
+              <el-tree
+                :data="organizationTree"
+                :props="{ label: 'name', children: 'children' }"
+                :expand-on-click-node="false"
+                :filter-node-method="filterNode"
+                ref="treeRef"
+                @node-click="handleNodeClick"
+                highlight-current
+              >
+                <template #default="{ node, data }">
+                  <span class="tree-node">
+                    <span>{{ node.label }}</span>
+                    <el-tag size="small" type="info">{{ organTypeLabel(Number(data.type)) }}</el-tag>
+                  </span>
+                </template>
+              </el-tree>
+            </el-card>
+          </el-col>
+          <el-col :span="16">
+            <el-card v-if="detailView">
+              <template #header>
+                <div class="card-header">
+                  <span>机构详情</span>
+                  <div class="header-actions">
+                    <el-button type="primary" size="small" @click="organDialogRef?.openEditById(String(detailView!.id!))">
+                      编辑
+                    </el-button>
+                    <el-button
+                      type="primary"
+                      size="small"
+                      plain
+                      @click="organDialogRef?.openCreateChild(String(detailView!.id!))"
+                    >
+                      新增下级
+                    </el-button>
+                    <el-button
+                      type="danger"
+                      size="small"
+                      :disabled="detailView?.hasChildren === true"
+                      @click="handleDeleteCurrent"
+                    >
+                      删除
+                    </el-button>
+                  </div>
+                </div>
+              </template>
+              <el-descriptions :column="1" border>
+                <el-descriptions-item label="机构名称">{{ detailView.organName }}</el-descriptions-item>
+                <el-descriptions-item label="类型">{{ organTypeLabel(detailView.organType) }}</el-descriptions-item>
+                <el-descriptions-item label="上级机构ID">
+                  {{ detailView.parentId == null || Number(detailView.parentId) === 0 ? '—' : String(detailView.parentId) }}
+                </el-descriptions-item>
+                <el-descriptions-item label="省/市/区 ID">
+                  {{ [detailView.provinceId, detailView.cityId, detailView.countyId].filter(Boolean).join(' / ') || '—' }}
+                </el-descriptions-item>
+                <el-descriptions-item label="详细地址">{{ detailView.address || '—' }}</el-descriptions-item>
+                <el-descriptions-item label="经纬度">
+                  {{ detailView.longitude ?? '—' }}, {{ detailView.latitude ?? '—' }}
+                </el-descriptions-item>
+                <el-descriptions-item label="负责人">{{ detailView.managerName || '—' }}</el-descriptions-item>
+                <el-descriptions-item label="负责人电话">{{ detailView.managerPhone || '—' }}</el-descriptions-item>
+                <el-descriptions-item label="对接人">{{ detailView.contactName || '—' }}</el-descriptions-item>
+                <el-descriptions-item label="对接人电话">{{ detailView.contactPhone || '—' }}</el-descriptions-item>
+                <el-descriptions-item label="排序">{{ detailView.sortOrder ?? 0 }}</el-descriptions-item>
+                <el-descriptions-item label="状态">
+                  <el-tag :type="detailView.status === 1 ? 'success' : 'info'" size="small">
+                    {{ detailView.status === 1 ? '启用' : '停用' }}
+                  </el-tag>
+                </el-descriptions-item>
+              </el-descriptions>
+
+              <el-divider />
+              <div class="employee-section">
+                <h4>员工信息</h4>
+                <el-empty description="暂未对接员工列表" :image-size="64" />
+              </div>
+            </el-card>
+            <el-empty v-else description="请在左侧选择机构" />
+          </el-col>
+        </el-row>
+      </el-tab-pane>
+
+      <el-tab-pane label="列表维护" name="list" lazy>
+        <OrganListPanel ref="listPanelRef" @success="onOrganFormSuccess" />
+      </el-tab-pane>
+    </el-tabs>
+
+    <OrganFormDialog ref="organDialogRef" @success="onOrganFormSuccess" />
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { organizationApi } from '@/api/organization'
-import { getOrganizationTypeLabel } from '@/utils'
-import type { Organization } from '@/types'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { organizationApi, type BaseOrganPayload } from '@/api/organization'
+import { organTypeLabel } from '@/utils/organization'
 import PageContainer from '@/components/PageContainer.vue'
+import OrganFormDialog from '@/components/organization/OrganFormDialog.vue'
+import OrganListPanel from '@/components/organization/OrganListPanel.vue'
+
+const route = useRoute()
+const router = useRouter()
 
 const searchKeyword = ref('')
-const organizationTree = ref<Organization[]>([])
-const currentOrg = ref<Organization | null>(null)
-const isEditing = ref(false)
+/** 与 GET /base/organ/tree 一致，type 为后端数字 1/2/3 */
+const organizationTree = ref<Record<string, unknown>[]>([])
 const treeRef = ref()
-const employees = ref<any[]>([])
-const addressValue = ref<string[]>([])
-const addressOptions = ref<any[]>([])
+const detailView = ref<BaseOrganPayload | null>(null)
+const organDialogRef = ref<InstanceType<typeof OrganFormDialog>>()
+const listPanelRef = ref<InstanceType<typeof OrganListPanel>>()
 
-const formData = reactive<Partial<Organization>>({
-  name: '',
-  type: 'STATION',
-  address: {
-    province: '',
-    city: '',
-    district: '',
-    detail: ''
-  },
-  manager: '',
-  managerPhone: '',
-  contact: '',
-  contactPhone: '',
-  latitude: 0,
-  latitudeDirection: 'N',
-  longitude: 0,
-  longitudeDirection: 'E',
-  status: 'ACTIVE'
-})
+const activeTab = ref<'tree' | 'list'>('tree')
 
-const loadOrganizations = async () => {
+async function loadOrganizations() {
   try {
     organizationTree.value = await organizationApi.getTree({ keyword: searchKeyword.value })
   } catch (error) {
@@ -165,76 +151,105 @@ const loadOrganizations = async () => {
   }
 }
 
-const handleSearch = () => {
+function handleTreeFilter() {
   if (treeRef.value) {
     treeRef.value.filter(searchKeyword.value)
   }
 }
 
-const filterNode = (value: string, data: Organization) => {
+const filterNode = (value: string, data: Record<string, unknown>) => {
   if (!value) return true
-  return data.name.includes(value)
+  return String(data.name ?? '').includes(value)
 }
 
-const handleNodeClick = async (data: Organization) => {
-  currentOrg.value = data
-  Object.assign(formData, data)
-  addressValue.value = [data.address.province, data.address.city, data.address.district]
-  isEditing.value = false
-  
+const handleNodeClick = async (data: Record<string, unknown>) => {
   try {
-    const res = await organizationApi.getEmployees(data.id)
-    employees.value = res.list
-  } catch (error) {
-    console.error('Load employees failed:', error)
+    detailView.value = await organizationApi.getDetail(String(data.id))
+  } catch {
+    detailView.value = null
   }
 }
 
-const handleEdit = () => {
-  isEditing.value = true
-}
-
-const handleSave = async () => {
-  if (!currentOrg.value) return
-  
+async function handleDeleteCurrent() {
+  if (!detailView.value?.id) return
+  if (detailView.value.hasChildren === true) {
+    ElMessage.warning('请先删除或调整下级机构后再删除本机构')
+    return
+  }
   try {
-    await organizationApi.update(currentOrg.value.id, formData)
-    ElMessage.success('保存成功')
-    isEditing.value = false
-    loadOrganizations()
-  } catch (error) {
-    console.error('Save failed:', error)
+    await ElMessageBox.confirm(
+      `确定删除机构「${detailView.value.organName}」？若存在下级机构将无法删除。`,
+      '删除确认',
+      { type: 'warning' }
+    )
+    await organizationApi.delete(String(detailView.value.id))
+    ElMessage.success('已删除')
+    detailView.value = null
+    await loadOrganizations()
+    listPanelRef.value?.loadData()
+  } catch (e) {
+    if (e !== 'cancel') console.error(e)
   }
 }
 
-const handleCancel = () => {
-  if (currentOrg.value) {
-    Object.assign(formData, currentOrg.value)
-  }
-  isEditing.value = false
-}
-
-watch(addressValue, (val) => {
-  if (val && val.length === 3) {
-    formData.address = {
-      province: val[0],
-      city: val[1],
-      district: val[2],
-      detail: formData.address?.detail || ''
+async function onOrganFormSuccess() {
+  await loadOrganizations()
+  listPanelRef.value?.loadData()
+  if (detailView.value?.id) {
+    try {
+      detailView.value = await organizationApi.getDetail(String(detailView.value.id))
+    } catch {
+      detailView.value = null
     }
   }
-})
+}
+
+function onTabChange(name: string | number) {
+  const v = name === 'list' ? 'list' : 'tree'
+  router.replace({ path: '/basic/organization', query: v === 'list' ? { view: 'list' } : {} })
+}
 
 onMounted(() => {
+  if (route.query.view === 'list') {
+    activeTab.value = 'list'
+  }
   loadOrganizations()
 })
+
+watch(
+  () => route.query.view,
+  (v) => {
+    if (v === 'list') activeTab.value = 'list'
+    else if (v === undefined || v === 'tree') activeTab.value = 'tree'
+  }
+)
 </script>
 
 <style scoped lang="scss">
+.tip {
+  margin-bottom: 16px;
+}
+
+.organ-tabs {
+  margin-top: 8px;
+}
+
+.tree-actions {
+  margin-bottom: 12px;
+}
+
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .tree-node {
@@ -246,10 +261,10 @@ onMounted(() => {
 }
 
 .employee-section {
-  margin-top: 20px;
-  
+  margin-top: 12px;
+
   h4 {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
 }
 </style>

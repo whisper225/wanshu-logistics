@@ -23,6 +23,11 @@
             <groupId>com.wanshu</groupId>
             <artifactId>wanshu-model</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>

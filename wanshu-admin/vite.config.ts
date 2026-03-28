@@ -26,10 +26,10 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
+      // 后端 Controller 均为 /api/**，此处必须原样转发，不能去掉 /api 前缀
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

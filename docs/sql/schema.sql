@@ -166,9 +166,9 @@ DROP TABLE IF EXISTS base_organ_scope;
 CREATE TABLE base_organ_scope (
     id          BIGINT NOT NULL COMMENT '主键ID',
     organ_id    BIGINT NOT NULL COMMENT '机构ID',
-    province_id BIGINT DEFAULT NULL COMMENT '省ID',
-    city_id     BIGINT DEFAULT NULL COMMENT '市ID',
-    county_id   BIGINT DEFAULT NULL COMMENT '区/县ID',
+    province_id BIGINT DEFAULT NULL COMMENT '省 adcode（国标 GB/T 2260，如 110000）',
+    city_id     BIGINT DEFAULT NULL COMMENT '市 adcode（如 110100）',
+    county_id   BIGINT DEFAULT NULL COMMENT '区县 adcode（如 110101）',
     PRIMARY KEY (id),
     KEY idx_organ_id (organ_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='机构作业范围表';
@@ -195,10 +195,22 @@ CREATE TABLE base_freight_template (
 DROP TABLE IF EXISTS base_economic_zone;
 CREATE TABLE base_economic_zone (
     id        BIGINT      NOT NULL COMMENT '主键ID',
-    zone_name VARCHAR(50) NOT NULL COMMENT '经济区名称(京津翼/江沪浙皖/川渝/黑吉辽)',
+    zone_name VARCHAR(50) NOT NULL COMMENT '经济区名称(京津冀/江浙沪/川渝/黑吉辽等)',
     provinces VARCHAR(200) NOT NULL COMMENT '包含省份(逗号分隔)',
+    light_throw_ratio INT DEFAULT 6000 COMMENT '普快轻抛系数(cm³/kg)',
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='经济区定义表';
+
+-- 运费模板与经济区关联（同一 economic_zone_id 全局唯一）
+DROP TABLE IF EXISTS base_freight_template_economic_zone;
+CREATE TABLE base_freight_template_economic_zone (
+    id                BIGINT NOT NULL COMMENT '主键ID',
+    template_id       BIGINT NOT NULL COMMENT '运费模板ID',
+    economic_zone_id  BIGINT NOT NULL COMMENT '经济区ID',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_economic_zone (economic_zone_id),
+    KEY idx_template (template_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运费模板经济区关联';
 
 -- 车型表
 DROP TABLE IF EXISTS base_vehicle_type;

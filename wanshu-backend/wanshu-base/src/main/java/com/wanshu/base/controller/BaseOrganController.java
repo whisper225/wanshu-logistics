@@ -26,10 +26,19 @@ public class BaseOrganController {
         return R.ok(organService.tree(keyword));
     }
 
-    @Operation(summary = "机构详情")
+    @Operation(summary = "机构分页列表（扁平，含上级机构名称）")
+    @GetMapping("/page")
+    public R<Map<String, Object>> page(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String keyword) {
+        return R.ok(organService.page(pageNum, pageSize, keyword));
+    }
+
+    @Operation(summary = "机构详情（含 hasChildren，id/parentId 为字符串）")
     @GetMapping("/{id}")
-    public R<BaseOrgan> detail(@PathVariable Long id) {
-        return R.ok(organService.getById(id));
+    public R<Map<String, Object>> detail(@PathVariable Long id) {
+        return R.ok(organService.detailMap(id));
     }
 
     @Operation(summary = "创建机构")

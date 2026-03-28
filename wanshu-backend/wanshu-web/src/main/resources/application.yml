@@ -18,13 +18,18 @@ spring:
       host: localhost
       port: 6379
       database: 0
+      password: ${REDIS_PASSWORD:root}
     mongodb:
       uri: mongodb://localhost:27017/wanshu_logistics
-    neo4j:
-      uri: bolt://localhost:7687
-      authentication:
-        username: ${NEO4J_USERNAME:neo4j}
-        password: ${NEO4J_PASSWORD:neo4j}
+
+  # Spring Boot 3 须用 spring.neo4j（勿写 spring.data.neo4j）
+  # 认证失败 AuthenticationException / unauthorized：密码须与 Neo4j 一致（首次登录后改的密码≠默认 neo4j）
+  # 建议用环境变量：NEO4J_USERNAME、NEO4J_PASSWORD（与 Neo4j Browser 能登录的账号相同）
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:neo4j}
 
   rabbitmq:
     host: localhost
@@ -52,6 +57,7 @@ mybatis-plus:
 
 sa-token:
   token-name: Authorization
+  is-read-header: true
   timeout: 86400
   active-timeout: 3600
   is-concurrent: true
@@ -65,6 +71,11 @@ knife4j:
 logging:
   level:
     com.wanshu: debug
+
+# 小程序模拟登录：设为存在的 sys_user.id；0 表示关闭（调用 /api/auth/wx/login 将提示配置）
+wanshu:
+  auth:
+    wx-mock-user-id: 0
 
 # 阿里云 OSS
 aliyun:

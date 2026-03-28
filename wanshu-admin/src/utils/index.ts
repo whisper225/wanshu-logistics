@@ -34,9 +34,9 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null
-  
-  return function(...args: Parameters<T>) {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+
+  return function (...args: Parameters<T>) {
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => {
       func(...args)
@@ -48,10 +48,10 @@ export const throttle = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null
+  let timeout: ReturnType<typeof setTimeout> | null = null
   let previous = 0
-  
-  return function(...args: Parameters<T>) {
+
+  return function (...args: Parameters<T>) {
     const now = Date.now()
     const remaining = wait - (now - previous)
     
@@ -85,13 +85,21 @@ export const exportToExcel = (data: any[], filename: string) => {
   console.log('Export to Excel:', filename, data)
 }
 
-export const getOrganizationTypeLabel = (type: string): string => {
+export const getOrganizationTypeLabel = (type: string | number): string => {
+  if (typeof type === 'number') {
+    const nmap: Record<number, string> = {
+      1: '一级转运中心',
+      2: '二级分拣中心',
+      3: '营业部'
+    }
+    return nmap[type] ?? String(type)
+  }
   const map: Record<string, string> = {
-    'HEADQUARTERS': '总公司',
-    'BRANCH': '分公司',
-    'PRIMARY_HUB': '一级转运中心',
-    'SECONDARY_HUB': '二级分拣中心',
-    'STATION': '营业部'
+    HEADQUARTERS: '总公司',
+    BRANCH: '分公司',
+    PRIMARY_HUB: '一级转运中心',
+    SECONDARY_HUB: '二级分拣中心',
+    STATION: '营业部'
   }
   return map[type] || type
 }

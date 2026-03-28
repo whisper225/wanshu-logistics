@@ -1,15 +1,18 @@
 <template>
   <PageContainer title="运费管理">
+    <el-alert type="info" show-icon :closable="false" class="tip">
+      普快计费：计费重量=max(实重, 体积重)，体积重=体积(cm³)/轻抛系数；同城/省内/跨省每种模板仅允许一条；经济区互寄可多选经济区（同一经济区仅绑定一个模板）。试算见接口说明。
+    </el-alert>
     <SearchForm v-model="searchForm" @search="handleSearch" @reset="handleReset">
       <el-form-item label="模板名称">
         <el-input v-model="searchForm.name" placeholder="请输入模板名称" clearable />
       </el-form-item>
       <el-form-item label="模板类型">
         <el-select v-model="searchForm.type" placeholder="请选择" clearable>
-          <el-option label="同城寄" value="SAME_CITY" />
-          <el-option label="省内寄" value="SAME_PROVINCE" />
-          <el-option label="跨省寄" value="CROSS_PROVINCE" />
-          <el-option label="经济区互寄" value="ECONOMIC_ZONE" />
+          <el-option label="同城寄" value="1" />
+          <el-option label="省内寄" value="2" />
+          <el-option label="跨省寄" value="3" />
+          <el-option label="经济区互寄" value="4" />
         </el-select>
       </el-form-item>
       <template #actions>
@@ -18,23 +21,29 @@
     </SearchForm>
 
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column prop="name" label="模板名称" />
-      <el-table-column prop="type" label="模板类型">
+      <el-table-column prop="templateName" label="模板名称" min-width="140" />
+      <el-table-column label="模板类型" width="120">
         <template #default="{ row }">
-          <el-tag>{{ getTypeLabel(row.type) }}</el-tag>
+          <el-tag>{{ typeLabel(row.templateType) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="baseWeight" label="首重(kg)" />
-      <el-table-column prop="basePrice" label="首重价格(元)" />
-      <el-table-column prop="additionalWeightPrice" label="续重价格(元/kg)" />
-      <el-table-column prop="status" label="状态">
+      <el-table-column prop="firstWeight" label="首重(kg)" width="90" />
+      <el-table-column prop="firstWeightPrice" label="首重价(元)" width="100" />
+      <el-table-column prop="extraWeight" label="续重单位(kg)" width="110" />
+      <el-table-column prop="extraWeightPrice" label="续重价(元/单位)" width="130" />
+      <el-table-column prop="lightThrowRatio" label="轻抛系数" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">
-            {{ row.status === 'ACTIVE' ? '启用' : '停用' }}
+          {{ row.lightThrowRatio ?? '默认' }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="90">
+        <template #default="{ row }">
+          <el-tag :type="row.status === 1 ? 'success' : 'info'">
+            {{ row.status === 1 ? '启用' : '停用' }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150">
+      <el-table-column label="操作" width="150" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="handleEdit(row)">修改</el-button>
           <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
@@ -52,37 +61,61 @@
       @current-change="loadData"
     />
 
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="600px"
-    >
-      <el-form :model="formData" :rules="rules" ref="formRef" label-width="140px">
-        <el-form-item label="模板名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入模板名称" />
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="640px" destroy-on-close>
+      <el-form :model="formData" :rules="rules" ref="formRef" label-width="150px">
+        <el-form-item label="模板名称" prop="templateName">
+          <el-input v-model="formData.templateName" placeholder="请输入模板名称" />
         </el-form-item>
-        <el-form-item label="模板类型" prop="type">
-          <el-select v-model="formData.type" placeholder="请选择">
-            <el-option label="同城寄" value="SAME_CITY" />
-            <el-option label="省内寄" value="SAME_PROVINCE" />
-            <el-option label="跨省寄" value="CROSS_PROVINCE" />
-            <el-option label="经济区互寄" value="ECONOMIC_ZONE" />
+        <el-form-item label="模板类型" prop="templateType">
+          <el-select v-model="formData.templateType" placeholder="请选择" style="width: 100%">
+            <el-option label="同城寄" :value="1" />
+            <el-option label="省内寄" :value="2" />
+            <el-option label="跨省寄" :value="3" />
+            <el-option label="经济区互寄" :value="4" />
           </el-select>
         </el-form-item>
-        <el-form-item label="首重(kg)" prop="baseWeight">
-          <el-input-number v-model="formData.baseWeight" :min="0" :precision="2" />
+        <el-form-item v-if="formData.templateType === 4" label="经济区" prop="economicZoneIds">
+          <el-select
+            v-model="formData.economicZoneIds"
+            multiple
+            filterable
+            placeholder="可多选，共用一个模板"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="z in economicZones"
+              :key="z.id"
+              :label="`${z.zoneName}（轻抛${z.lightThrowRatio ?? '—'}）`"
+              :value="z.id"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="首重价格(元)" prop="basePrice">
-          <el-input-number v-model="formData.basePrice" :min="0" :precision="2" />
+        <el-form-item label="首重(kg)" prop="firstWeight">
+          <el-input-number v-model="formData.firstWeight" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="续重价格(元/kg)" prop="additionalWeightPrice">
-          <el-input-number v-model="formData.additionalWeightPrice" :min="0" :precision="2" />
+        <el-form-item label="首重价格(元)" prop="firstWeightPrice">
+          <el-input-number v-model="formData.firstWeightPrice" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="首体积(m³)" prop="baseVolume">
-          <el-input-number v-model="formData.baseVolume" :min="0" :precision="2" />
+        <el-form-item label="续重单位(kg)" prop="extraWeight">
+          <el-input-number v-model="formData.extraWeight" :min="0.01" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="续体积价格(元/m³)" prop="additionalVolumePrice">
-          <el-input-number v-model="formData.additionalVolumePrice" :min="0" :precision="2" />
+        <el-form-item label="续重单价(元/单位)" prop="extraWeightPrice">
+          <el-input-number v-model="formData.extraWeightPrice" :min="0" :precision="2" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="轻抛系数(cm³/kg)" prop="lightThrowRatio">
+          <el-input-number
+            v-model="formData.lightThrowRatio"
+            :min="1"
+            :precision="0"
+            placeholder="留空则按类型/经济区默认"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="formData.status">
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">停用</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -97,12 +130,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { pricingApi } from '@/api/pricing'
-import type { PricingTemplate } from '@/types'
+import type { EconomicZoneItem, PricingTemplate } from '@/types'
 import PageContainer from '@/components/PageContainer.vue'
 import SearchForm from '@/components/SearchForm.vue'
 
 const loading = ref(false)
 const tableData = ref<PricingTemplate[]>([])
+const economicZones = ref<EconomicZoneItem[]>([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref<FormInstance>()
@@ -118,32 +152,38 @@ const pagination = reactive({
   total: 0
 })
 
-const formData = reactive<Partial<PricingTemplate>>({
-  name: '',
-  type: 'SAME_CITY',
-  baseWeight: 1,
-  basePrice: 0,
-  additionalWeightPrice: 0,
-  baseVolume: 0,
-  additionalVolumePrice: 0,
-  status: 'ACTIVE'
+const defaultForm = (): Partial<PricingTemplate> => ({
+  templateName: '',
+  templateType: 1,
+  firstWeight: 1,
+  firstWeightPrice: 0,
+  extraWeight: 1,
+  extraWeightPrice: 0,
+  lightThrowRatio: undefined,
+  status: 1,
+  economicZoneIds: []
 })
 
+const formData = reactive<Partial<PricingTemplate>>(defaultForm())
+
 const rules: FormRules = {
-  name: [{ required: true, message: '请输入模板名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择模板类型', trigger: 'change' }],
-  baseWeight: [{ required: true, message: '请输入首重', trigger: 'blur' }],
-  basePrice: [{ required: true, message: '请输入首重价格', trigger: 'blur' }]
+  templateName: [{ required: true, message: '请输入模板名称', trigger: 'blur' }],
+  templateType: [{ required: true, message: '请选择模板类型', trigger: 'change' }],
+  firstWeight: [{ required: true, message: '请输入首重', trigger: 'blur' }],
+  firstWeightPrice: [{ required: true, message: '请输入首重价格', trigger: 'blur' }]
 }
 
-const getTypeLabel = (type: string) => {
-  const map: Record<string, string> = {
-    'SAME_CITY': '同城寄',
-    'SAME_PROVINCE': '省内寄',
-    'CROSS_PROVINCE': '跨省寄',
-    'ECONOMIC_ZONE': '经济区互寄'
+const typeLabel = (t?: number) => {
+  const m: Record<number, string> = { 1: '同城寄', 2: '省内寄', 3: '跨省寄', 4: '经济区互寄' }
+  return t != null ? m[t] ?? String(t) : '—'
+}
+
+const loadEconomicZones = async () => {
+  try {
+    economicZones.value = await pricingApi.getEconomicZones()
+  } catch {
+    economicZones.value = []
   }
-  return map[type] || type
 }
 
 const loadData = async () => {
@@ -176,23 +216,24 @@ const handleReset = () => {
 
 const handleAdd = () => {
   dialogTitle.value = '新增运费模板'
-  Object.assign(formData, {
-    name: '',
-    type: 'SAME_CITY',
-    baseWeight: 1,
-    basePrice: 0,
-    additionalWeightPrice: 0,
-    baseVolume: 0,
-    additionalVolumePrice: 0,
-    status: 'ACTIVE'
-  })
+  Object.assign(formData, defaultForm(), { id: undefined })
   dialogVisible.value = true
 }
 
-const handleEdit = (row: PricingTemplate) => {
+const handleEdit = async (row: PricingTemplate) => {
   dialogTitle.value = '修改运费模板'
-  Object.assign(formData, row)
-  dialogVisible.value = true
+  try {
+    const detail = await pricingApi.getDetail(String(row.id))
+    const zoneIds = detail.economicZoneIds?.map((id) => String(id)) ?? []
+    Object.assign(formData, {
+      ...detail,
+      economicZoneIds: zoneIds,
+      id: detail.id != null ? String(detail.id) : undefined
+    })
+    dialogVisible.value = true
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleDelete = async (row: PricingTemplate) => {
@@ -200,7 +241,7 @@ const handleDelete = async (row: PricingTemplate) => {
     await ElMessageBox.confirm('确定要删除该运费模板吗？', '提示', {
       type: 'warning'
     })
-    await pricingApi.delete(row.id)
+    await pricingApi.delete(String(row.id))
     ElMessage.success('删除成功')
     loadData()
   } catch (error) {
@@ -210,15 +251,36 @@ const handleDelete = async (row: PricingTemplate) => {
 
 const handleSubmit = async () => {
   if (!formRef.value) return
-  
+
   await formRef.value.validate(async (valid) => {
     if (!valid) return
-    
+
+    if (formData.templateType === 4 && (!formData.economicZoneIds || formData.economicZoneIds.length === 0)) {
+      ElMessage.warning('经济区互寄请至少选择一个经济区')
+      return
+    }
+
+    const payload: Record<string, unknown> = {
+      templateName: formData.templateName,
+      templateType: formData.templateType,
+      firstWeight: formData.firstWeight,
+      firstWeightPrice: formData.firstWeightPrice,
+      extraWeight: formData.extraWeight,
+      extraWeightPrice: formData.extraWeightPrice,
+      status: formData.status ?? 1
+    }
+    if (formData.lightThrowRatio != null && !Number.isNaN(Number(formData.lightThrowRatio))) {
+      payload.lightThrowRatio = Number(formData.lightThrowRatio)
+    }
+    if (formData.templateType === 4 && formData.economicZoneIds?.length) {
+      payload.economicZoneIds = formData.economicZoneIds.map((id) => Number(id))
+    }
+
     try {
       if (formData.id) {
-        await pricingApi.update(formData.id, formData)
+        await pricingApi.update(String(formData.id), payload as Partial<PricingTemplate>)
       } else {
-        await pricingApi.create(formData)
+        await pricingApi.create(payload as Partial<PricingTemplate>)
       }
       ElMessage.success('保存成功')
       dialogVisible.value = false
@@ -230,6 +292,13 @@ const handleSubmit = async () => {
 }
 
 onMounted(() => {
+  loadEconomicZones()
   loadData()
 })
 </script>
+
+<style scoped lang="scss">
+.tip {
+  margin-bottom: 16px;
+}
+</style>

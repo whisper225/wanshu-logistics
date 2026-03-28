@@ -3,11 +3,11 @@ package com.wanshu.system.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wanshu.common.result.R;
 import com.wanshu.model.entity.sys.SysUser;
+import com.wanshu.system.config.PasswordEncoder;
 import com.wanshu.system.service.SysUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class SysUserController {
 
     private final SysUserService userService;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Operation(summary = "用户分页列表")
     @GetMapping("/page")

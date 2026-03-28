@@ -11,7 +11,7 @@ export const authApi = {
   },
 
   getUserInfo() {
-    return request.get<UserInfo>('/auth/userinfo')
+    return request.get<UserInfo>('/auth/userInfo')
   },
 
   logout() {

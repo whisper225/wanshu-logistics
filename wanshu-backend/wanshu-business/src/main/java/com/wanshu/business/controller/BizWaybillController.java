@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "运单管理")
@@ -40,6 +41,12 @@ public class BizWaybillController {
     @GetMapping("/{id}")
     public R<BizWaybill> detail(@PathVariable Long id) {
         return R.ok(waybillService.getById(id));
+    }
+
+    @Operation(summary = "运单物流轨迹")
+    @GetMapping("/{id}/track")
+    public R<List<Map<String, Object>>> track(@PathVariable Long id) {
+        return R.ok(waybillService.listTrack(id));
     }
 
     @Operation(summary = "创建运单")

@@ -45,4 +45,23 @@ public class AuthController {
         authService.logout();
         return R.ok();
     }
+
+    @Operation(summary = "发送短信验证码（司机端等）")
+    @PostMapping("/sms/send")
+    public R<Void> sendSms(@RequestBody Map<String, String> body) {
+        authService.sendSmsCode(body.get("phone"));
+        return R.ok();
+    }
+
+    @Operation(summary = "短信验证码登录（司机端）")
+    @PostMapping("/sms/login")
+    public R<Map<String, Object>> smsLogin(@RequestBody Map<String, String> body) {
+        return R.ok(authService.smsLogin(body.get("phone"), body.get("code")));
+    }
+
+    @Operation(summary = "微信小程序登录（演示，需配置 wx-mock-user-id）")
+    @PostMapping("/wx/login")
+    public R<Map<String, Object>> wxLogin(@RequestBody Map<String, String> body) {
+        return R.ok(authService.wxMiniLogin(body.get("code")));
+    }
 }

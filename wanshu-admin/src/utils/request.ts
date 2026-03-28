@@ -15,6 +15,8 @@ service.interceptors.request.use(
   (config) => {
     const userStore = useUserStore()
     if (userStore.token) {
+      // 与 sa-token.token-name 一致（见 application.yml）；同时兼容旧 satoken 头
+      config.headers['Authorization'] = userStore.token
       config.headers['satoken'] = userStore.token
     }
     return config
