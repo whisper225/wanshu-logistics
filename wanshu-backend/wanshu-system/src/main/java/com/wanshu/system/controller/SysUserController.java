@@ -29,8 +29,9 @@ public class SysUserController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Integer status) {
-        IPage<SysUser> page = userService.page(pageNum, pageSize, keyword, status);
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Long organId) {
+        IPage<SysUser> page = userService.page(pageNum, pageSize, keyword, status, organId);
         Map<String, Object> result = new HashMap<>();
         result.put("list", page.getRecords());
         result.put("total", page.getTotal());

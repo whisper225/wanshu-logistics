@@ -64,8 +64,15 @@
       </el-table-column>
       <el-table-column prop="startOrganName" label="起始机构" width="120" show-overflow-tooltip />
       <el-table-column prop="endOrganName" label="目的地机构" width="120" show-overflow-tooltip />
-      <el-table-column label="距离" width="90">
-        <template #default="{ row }">{{ row.distance != null ? row.distance : '—' }}</template>
+      <el-table-column label="距离(km)" width="100">
+        <template #default="{ row }">
+          {{ row.distance != null ? (Number(row.distance) / 1000).toFixed(1) + ' km' : '—' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="成本(元)" width="100">
+        <template #default="{ row }">
+          {{ row.cost != null ? Number(row.cost).toFixed(2) : '—' }}
+        </template>
       </el-table-column>
       <el-table-column prop="status" label="状态" width="80">
         <template #default="{ row }">
@@ -226,25 +233,39 @@
     <!-- 车次 -->
     <el-dialog v-model="tripDialogVisible" :title="tripDialogTitle" width="560px" destroy-on-close @closed="tripEditLine = null">
       <el-form ref="tripFormRef" :model="tripForm" :rules="tripRules" label-width="100px">
-        <el-form-item label="车次编号" prop="tripNumber">
-          <el-input v-model="tripForm.tripNumber" />
+        <el-form-item label="所属线路">
+          <el-input :value="tripEditLine?.lineName || tripEditLine?.lineNumber || '—'" disabled />
         </el-form-item>
         <el-form-item label="车次名称" prop="tripName">
-          <el-input v-model="tripForm.tripName" />
-        </el-form-item>
-        <el-form-item label="发车周期" prop="periodType">
-          <el-select v-model="tripForm.periodType" style="width: 100%">
-            <el-option label="天" :value="1" />
-            <el-option label="周" :value="2" />
-            <el-option label="月" :value="3" />
-            <el-option label="一次" :value="4" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="发车日" prop="departDay">
-          <el-input v-model="tripForm.departDay" placeholder="周1-7 / 月1-31 / 一次填日期" />
+          <el-input v-model="tripForm.tripName" placeholder="请输入车次名称" />
         </el-form-item>
         <el-form-item label="发车时间" prop="departTime">
           <el-time-picker v-model="tripForm.departTime" value-format="HH:mm:ss" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="持续时长">
+          <el-input-number
+            v-model="tripForm.durationMinutes"
+            :min="1"
+            :max="9999"
+            :precision="0"
+            controls-position="right"
+            style="width: calc(100% - 44px)"
+          />
+          <span style="margin-left: 8px; color: #606266;">分钟</span>
+        </el-form-item>
+        <el-form-item label="发车周期" prop="periodType">
+          <el-select v-model="tripForm.periodType" style="width: 100%">
+            <el-option label="每天" :value="1" />
+            <el-option label="每周" :value="2" />
+            <el-option label="每月" :value="3" />
+            <el-option label="一次性" :value="4" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发车日" prop="departDay">
+          <el-input v-model="tripForm.departDay" placeholder="每周填1-7 / 每月填1-31 / 一次性填日期" />
+        </el-form-item>
+        <el-form-item label="车次编号">
+          <el-input v-model="tripForm.tripNumber" placeholder="留空则系统自动生成" />
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="tripForm.status">
@@ -430,12 +451,12 @@ const tripForm = reactive({
   periodType: 1,
   departDay: '',
   departTime: '08:00:00',
+  durationMinutes: undefined as number | undefined,
   status: 1
 })
 const tripRules: FormRules = {
-  tripNumber: [{ required: true, message: '请输入车次编号', trigger: 'blur' }],
   tripName: [{ required: true, message: '请输入车次名称', trigger: 'blur' }],
-  periodType: [{ required: true, message: '请选择周期', trigger: 'change' }],
+  periodType: [{ required: true, message: '请选择发车周期', trigger: 'change' }],
   departTime: [{ required: true, message: '请选择发车时间', trigger: 'change' }]
 }
 
@@ -695,6 +716,7 @@ function openTripDialog(line: LineRow, trip: DispatchTripDto | null) {
     tripForm.periodType = trip.periodType ?? 1
     tripForm.departDay = trip.departDay || ''
     tripForm.departTime = formatDepart(trip) !== '—' ? formatDepart(trip) : '08:00:00'
+    tripForm.durationMinutes = trip.durationMinutes ?? undefined
     tripForm.status = trip.status ?? 1
   } else {
     tripDialogTitle.value = '添加车次'
@@ -703,6 +725,7 @@ function openTripDialog(line: LineRow, trip: DispatchTripDto | null) {
     tripForm.periodType = 1
     tripForm.departDay = ''
     tripForm.departTime = '08:00:00'
+    tripForm.durationMinutes = undefined
     tripForm.status = 1
   }
   tripDialogVisible.value = true
@@ -715,11 +738,12 @@ async function submitTrip() {
   await tripFormRef.value.validate(async (valid) => {
     if (!valid) return
     const body: Record<string, unknown> = {
-      tripNumber: tripForm.tripNumber,
+      tripNumber: tripForm.tripNumber || null,
       tripName: tripForm.tripName,
       periodType: tripForm.periodType,
       departDay: tripForm.departDay || null,
       departTime: tripForm.departTime,
+      durationMinutes: tripForm.durationMinutes ?? null,
       status: tripForm.status
     }
     tripSaving.value = true

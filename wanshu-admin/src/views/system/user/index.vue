@@ -19,6 +19,11 @@
       <el-table-column prop="username" label="用户名" />
       <el-table-column prop="realName" label="姓名" />
       <el-table-column prop="phone" label="手机号" />
+      <el-table-column label="所属机构" min-width="160" show-overflow-tooltip>
+        <template #default="{ row }">
+          {{ organLabel(row.organId) }}
+        </template>
+      </el-table-column>
       <el-table-column prop="gender" label="性别">
         <template #default="{ row }">
           {{ row.gender === 1 ? '男' : row.gender === 2 ? '女' : '未知' }}
@@ -66,6 +71,22 @@
         <el-form-item label="手机号" prop="phone">
           <el-input v-model="formData.phone" />
         </el-form-item>
+        <el-form-item label="所属机构">
+          <el-select
+            v-model="formData.organId"
+            placeholder="请选择机构"
+            clearable
+            filterable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="o in flatOrgOptions"
+              :key="o.value"
+              :label="o.label"
+              :value="o.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="性别">
           <el-radio-group v-model="formData.gender">
             <el-radio :value="0">未知</el-radio>
@@ -104,8 +125,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { systemApi } from '@/api/system'
+import { organizationApi } from '@/api/organization'
 import PageContainer from '@/components/PageContainer.vue'
 import SearchForm from '@/components/SearchForm.vue'
+
+type TreeOrg = Record<string, unknown> & { id?: string | number; name?: string; children?: TreeOrg[] }
 
 const loading = ref(false)
 const tableData = ref<any[]>([])
@@ -120,8 +144,49 @@ const currentUserId = ref<number>()
 const searchForm = reactive({ keyword: '', status: undefined as number | undefined })
 const pagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
 
+const flatOrgOptions = ref<{ value: string; label: string }[]>([])
+
+function flattenOrgTree(nodes: TreeOrg[], depth = 0): { value: string; label: string }[] {
+  const out: { value: string; label: string }[] = []
+  for (const n of nodes) {
+    const id = n.id != null ? String(n.id) : ''
+    const name = String(n.name ?? '')
+    if (id) {
+      out.push({ value: id, label: `${'　'.repeat(depth)}${name}` })
+    }
+    if (n.children?.length) {
+      out.push(...flattenOrgTree(n.children, depth + 1))
+    }
+  }
+  return out
+}
+
+function organLabel(organId: string | number | undefined | null) {
+  if (organId === undefined || organId === null || organId === '') return '—'
+  const sid = String(organId)
+  const hit = flatOrgOptions.value.find((o) => o.value === sid)
+  if (!hit) return sid
+  return hit.label.replace(/^[\s　]+/, '')
+}
+
+const loadOrgTree = async () => {
+  try {
+    const tree = (await organizationApi.getTree()) as unknown as TreeOrg[]
+    flatOrgOptions.value = flattenOrgTree(Array.isArray(tree) ? tree : [])
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 const formData = reactive<any>({
-  id: undefined, username: '', password: '', realName: '', phone: '', gender: 0, status: 1
+  id: undefined,
+  username: '',
+  password: '',
+  realName: '',
+  phone: '',
+  organId: undefined as string | undefined,
+  gender: 0,
+  status: 1
 })
 
 const rules: FormRules = {
@@ -144,13 +209,26 @@ const handleReset = () => { searchForm.keyword = ''; searchForm.status = undefin
 
 const handleAdd = () => {
   dialogTitle.value = '新增用户'
-  Object.assign(formData, { id: undefined, username: '', password: '', realName: '', phone: '', gender: 0, status: 1 })
+  Object.assign(formData, {
+    id: undefined,
+    username: '',
+    password: '',
+    realName: '',
+    phone: '',
+    organId: undefined,
+    gender: 0,
+    status: 1
+  })
   dialogVisible.value = true
 }
 
 const handleEdit = (row: any) => {
   dialogTitle.value = '编辑用户'
-  Object.assign(formData, { ...row, password: '' })
+  Object.assign(formData, {
+    ...row,
+    password: '',
+    organId: row.organId != null && row.organId !== '' ? String(row.organId) : undefined
+  })
   dialogVisible.value = true
 }
 
@@ -165,10 +243,14 @@ const handleSubmit = async () => {
   if (!formRef.value) return
   await formRef.value.validate(async (valid) => {
     if (!valid) return
+    const payload = { ...formData }
+    if (payload.organId === '' || payload.organId === undefined) {
+      payload.organId = null
+    }
     if (formData.id) {
-      await systemApi.updateUser(formData.id, formData)
+      await systemApi.updateUser(formData.id, payload)
     } else {
-      await systemApi.createUser(formData)
+      await systemApi.createUser(payload)
     }
     ElMessage.success('保存成功')
     dialogVisible.value = false
@@ -194,5 +276,8 @@ const handleSaveRoles = async () => {
   roleDialogVisible.value = false
 }
 
-onMounted(() => loadData())
+onMounted(async () => {
+  await loadOrgTree()
+  loadData()
+})
 </script>

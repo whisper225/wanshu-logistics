@@ -37,15 +37,13 @@ export interface EmpCourierScopeRow {
   countyId?: number
 }
 
-function toOrganIdParam(v: string | number | undefined): number | undefined {
+/**
+ * 将所有 ID / organId 保持为字符串传给后端，避免 JS Number 对雪花 ID 精度丢失。
+ * Spring MVC @RequestParam Long / @RequestBody Long 均支持将字符串数字自动转换。
+ */
+function toIdStr(v: string | number | undefined | null): string | undefined {
   if (v === undefined || v === null || v === '') return undefined
-  const n = typeof v === 'number' ? v : Number(v)
-  return Number.isFinite(n) ? n : undefined
-}
-
-function toIdNum(id: string | number): number {
-  const n = typeof id === 'number' ? id : Number(id)
-  return n
+  return String(v)
 }
 
 export const employeeApi = {
@@ -60,7 +58,7 @@ export const employeeApi = {
       params: {
         pageNum: params?.pageNum,
         pageSize: params?.pageSize,
-        organId: toOrganIdParam(params?.organId),
+        organId: toIdStr(params?.organId),
         workStatus: params?.workStatus,
         keyword: params?.keyword
       }
@@ -90,7 +88,7 @@ export const employeeApi = {
       params: {
         pageNum: params?.pageNum,
         pageSize: params?.pageSize,
-        organId: toOrganIdParam(params?.organId),
+        organId: toIdStr(params?.organId),
         workStatus: params?.workStatus,
         keyword: params?.keyword
       }
@@ -104,23 +102,27 @@ export const employeeApi = {
   /** 司机已绑定的车辆 */
   getDriverBoundVehicles(driverId: string | number) {
     return request.get<Vehicle[]>('/emp/driver/bound-vehicles', {
-      params: { driverId: toIdNum(driverId) }
+      params: { driverId: toIdStr(driverId) }
     })
   },
 
   /**
    * 绑定车辆（后端校验：资料完整、上班/排班、车辆须为停用非可用）
+   * driverId / vehicleId 以字符串传递，避免 JS Number 精度丢失
    */
   bindDriverVehicle(driverId: string | number, vehicleId: string | number) {
     return request.post<void>('/emp/driver/bind-vehicle', {
-      driverId: toIdNum(driverId),
-      vehicleId: toIdNum(vehicleId)
+      driverId: toIdStr(driverId),
+      vehicleId: toIdStr(vehicleId)
     })
   },
 
   unbindDriverVehicle(driverId: string | number, vehicleId: string | number) {
     return request.delete<void>('/emp/driver/unbind-vehicle', {
-      params: { driverId: toIdNum(driverId), vehicleId: toIdNum(vehicleId) }
+      params: {
+        driverId: toIdStr(driverId),
+        vehicleId: toIdStr(vehicleId)
+      }
     })
   }
 }

@@ -1,4 +1,5 @@
-import { createSSRApp } from 'vue'
+/// <reference path="./env.d.ts" />
+import { createSSRApp } from '@vue/runtime-dom'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 

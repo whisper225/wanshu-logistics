@@ -2,6 +2,8 @@ package com.wanshu.system.service;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wanshu.common.exception.BusinessException;
 import com.wanshu.common.utils.RedisUtil;
 import com.wanshu.model.entity.sys.SysRole;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -43,6 +46,18 @@ public class AuthService {
 
     @Value("${wanshu.auth.wx-mock-user-id:0}")
     private long wxMockUserId;
+
+    @Value("${wanshu.wx.app-id:}")
+    private String wxAppId;
+
+    @Value("${wanshu.wx.app-secret:}")
+    private String wxAppSecret;
+
+    private static final String WX_CODE2SESSION_URL =
+            "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code";
+
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final class CaptchaMem {
         final String code;
@@ -232,30 +247,112 @@ public class AuthService {
     }
 
     /**
-     * 微信小程序登录（演示：未调用 wx.code2session；当配置 wanshu.auth.wx-mock-user-id 为大于 0 的 sys_user.id 时模拟登录）
+     * 微信小程序三端统一登录。
+     * <ul>
+     *   <li>role = user    用户端，首次自动注册，无需绑定角色</li>
+     *   <li>role = courier 快递员端，用户需有 courier 角色登录范围</li>
+     *   <li>role = driver  司机端，用户需有 driver 角色登录范围</li>
+     * </ul>
+     * 若 {@code wanshu.auth.wx-mock-user-id > 0}，跳过真实 code2session（本地开发用）。
      */
-    public Map<String, Object> wxMiniLogin(String code) {
+    public Map<String, Object> wxMiniLogin(String code, String role) {
         if (!StringUtils.hasText(code)) {
-            throw new BusinessException("code不能为空");
+            throw new BusinessException("code 不能为空");
         }
-        if (wxMockUserId <= 0) {
-            throw new BusinessException("未配置小程序模拟登录：请在配置中设置 wanshu.auth.wx-mock-user-id 为有效 sys_user.id");
+        // role 默认 user
+        final String loginRole = StringUtils.hasText(role) ? role.trim().toLowerCase() : "user";
+
+        // -------- 模拟登录（本地开发：wx-mock-user-id > 0）--------
+        if (wxMockUserId > 0) {
+            SysUser user = userService.getById(wxMockUserId);
+            if (user == null) {
+                throw new BusinessException("wx-mock-user-id 对应的用户不存在");
+            }
+            if (user.getStatus() != null && user.getStatus() == 0) {
+                throw new BusinessException("账号已被禁用");
+            }
+            List<SysRole> roles = roleService.getRolesByUserId(user.getId());
+            validateRole(roles, loginRole);
+            StpUtil.login(user.getId());
+            SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", tokenInfo.getTokenValue());
+            result.put("userInfo", buildUserInfo(user, roles));
+            result.put("role", loginRole);
+            result.put("mockNote", "演示登录：已忽略微信 code，使用 wanshu.auth.wx-mock-user-id");
+            return result;
         }
-        SysUser user = userService.getById(wxMockUserId);
+
+        // -------- 真实微信登录 --------
+        if (!StringUtils.hasText(wxAppId) || !StringUtils.hasText(wxAppSecret)) {
+            throw new BusinessException("未配置微信小程序 AppID/AppSecret，请检查 wanshu.wx 配置");
+        }
+
+        String reqUrl = String.format(WX_CODE2SESSION_URL, wxAppId, wxAppSecret, code);
+        String openid;
+        String unionid = null;
+        try {
+            String resp = restTemplate.getForObject(reqUrl, String.class);
+            JsonNode node = objectMapper.readTree(resp);
+            if (node.has("errcode") && node.get("errcode").asInt() != 0) {
+                log.error("wx.code2session 失败: {}", resp);
+                throw new BusinessException("微信登录失败：" + node.path("errmsg").asText());
+            }
+            openid  = node.path("openid").asText(null);
+            unionid = node.path("unionid").asText(null);
+            if (!StringUtils.hasText(openid)) {
+                throw new BusinessException("微信登录失败：未获取到 openid");
+            }
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("调用微信 code2session 异常", e);
+            throw new BusinessException("微信登录请求异常，请稍后重试");
+        }
+
+        // 按 openid 查找或自动注册用户
+        SysUser user = userService.getByWxOpenid(openid);
         if (user == null) {
-            throw new BusinessException("wx-mock-user-id 对应的用户不存在");
+            if (!"user".equals(loginRole)) {
+                // 快递员/司机首次使用微信登录须在管理端先创建账号并绑定 openid
+                throw new BusinessException("该微信账号尚未绑定" +
+                        ("courier".equals(loginRole) ? "快递员" : "司机") + "账号，请联系管理员");
+            }
+            user = userService.registerWxUser(openid, unionid);
         }
         if (user.getStatus() != null && user.getStatus() == 0) {
             throw new BusinessException("账号已被禁用");
         }
+
         List<SysRole> roles = roleService.getRolesByUserId(user.getId());
+        validateRole(roles, loginRole);
+
         StpUtil.login(user.getId());
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
         Map<String, Object> result = new HashMap<>();
         result.put("token", tokenInfo.getTokenValue());
         result.put("userInfo", buildUserInfo(user, roles));
-        result.put("mockNote", "演示登录：已忽略微信 code，使用 wanshu.auth.wx-mock-user-id");
+        result.put("role", loginRole);
+        result.put("openid", openid);
         return result;
+    }
+
+    /**
+     * 根据 role 校验用户是否有相应登录权限。
+     * user 端不做角色限制（普通注册用户即可）。
+     */
+    private void validateRole(List<SysRole> roles, String loginRole) {
+        if ("user".equals(loginRole)) {
+            return; // 用户端无需角色限制
+        }
+        boolean ok = roles.stream().anyMatch(r -> {
+            String scope = r.getLoginScope();
+            return scope != null && scope.contains(loginRole);
+        });
+        if (!ok) {
+            String name = "courier".equals(loginRole) ? "快递员" : "司机";
+            throw new BusinessException("该微信账号没有" + name + "端权限，请联系管理员");
+        }
     }
 
     private Map<String, Object> buildUserInfo(SysUser user, List<SysRole> roles) {

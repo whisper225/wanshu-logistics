@@ -59,9 +59,9 @@ public class AuthController {
         return R.ok(authService.smsLogin(body.get("phone"), body.get("code")));
     }
 
-    @Operation(summary = "微信小程序登录（演示，需配置 wx-mock-user-id）")
+    @Operation(summary = "微信小程序登录（user=用户端 courier=快递员端 driver=司机端）")
     @PostMapping("/wx/login")
     public R<Map<String, Object>> wxLogin(@RequestBody Map<String, String> body) {
-        return R.ok(authService.wxMiniLogin(body.get("code")));
+        return R.ok(authService.wxMiniLogin(body.get("code"), body.get("role")));
     }
 }

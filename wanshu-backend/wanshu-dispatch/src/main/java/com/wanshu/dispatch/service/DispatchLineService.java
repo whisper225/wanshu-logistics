@@ -132,9 +132,22 @@ public class DispatchLineService {
         }
 
         lineMapper.insert(line);
-
-        // MySQL 事务提交后同步 Neo4j
         eventPublisher.publishEvent(new LineGraphUpsertEvent(line, startOrgan, endOrgan));
+
+        // 自动创建返程线路（同等距离/成本，起点与终点互换）
+        DispatchLine returnLine = new DispatchLine();
+        returnLine.setLineNumber(line.getLineNumber() + "R");
+        returnLine.setLineName(line.getLineName() + "（返程）");
+        returnLine.setLineType(line.getLineType());
+        returnLine.setStartOrganId(line.getEndOrganId());
+        returnLine.setEndOrganId(line.getStartOrganId());
+        returnLine.setDistance(line.getDistance());
+        returnLine.setCost(line.getCost());
+        returnLine.setEstimatedTime(line.getEstimatedTime());
+        returnLine.setStatus(line.getStatus());
+        lineMapper.insert(returnLine);
+        // 返程线路 Neo4j 关系（方向互换）
+        eventPublisher.publishEvent(new LineGraphUpsertEvent(returnLine, endOrgan, startOrgan));
     }
 
     @Transactional
@@ -254,6 +267,11 @@ public class DispatchLineService {
 
     @Transactional
     public void createTrip(DispatchTrip trip) {
+        if (!org.springframework.util.StringUtils.hasText(trip.getTripNumber())) {
+            long id = com.baomidou.mybatisplus.core.toolkit.IdWorker.getId();
+            trip.setId(id);
+            trip.setTripNumber("TC" + (id % 1_000_000_000L));
+        }
         tripMapper.insert(trip);
     }
 

@@ -29,6 +29,7 @@ spring:
     uri: bolt://localhost:7687
     authentication:
       username: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:neo4j}
 
   rabbitmq:
     host: localhost
@@ -71,9 +72,14 @@ logging:
   level:
     com.wanshu: debug
 
-# 小程序模拟登录：设为存在的 sys_user.id；0 表示关闭（调用 /api/auth/wx/login 将提示配置）
+# 微信小程序
 wanshu:
+  wx:
+    app-id: wx77f718439c6f37e4
+    app-secret: ${WX_APP_SECRET:7278ca5936c0a26f1b59f1a1f59efba3}
   auth:
+    # 小程序模拟登录：设为存在的 sys_user.id；0 表示关闭，使用真实 wx.code2session
+    # 开发时若未执行 migration_sys_user_wx_openid.sql，可将此值设为已有用户的 id（如 1）临时绕过
     wx-mock-user-id: 0
 
 # 高德地图 Web 服务（后端 REST API）

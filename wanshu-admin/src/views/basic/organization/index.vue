@@ -102,8 +102,31 @@
 
               <el-divider />
               <div class="employee-section">
-                <h4>员工信息</h4>
-                <el-empty description="暂未对接员工列表" :image-size="64" />
+                <h4>本机构员工</h4>
+                <p class="employee-tip">在用户管理中可为用户绑定或调整所属机构。</p>
+                <el-table :data="empList" v-loading="empLoading" size="small" max-height="360">
+                  <el-table-column prop="username" label="用户名" min-width="100" show-overflow-tooltip />
+                  <el-table-column prop="realName" label="姓名" min-width="90" show-overflow-tooltip />
+                  <el-table-column prop="phone" label="手机号" min-width="120" show-overflow-tooltip />
+                  <el-table-column prop="status" label="状态" width="88">
+                    <template #default="{ row }">
+                      <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+                        {{ row.status === 1 ? '启用' : '禁用' }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <el-pagination
+                  v-model:current-page="empPagination.pageNum"
+                  v-model:page-size="empPagination.pageSize"
+                  :total="empPagination.total"
+                  :page-sizes="[10, 20, 50]"
+                  layout="total, sizes, prev, pager, next"
+                  small
+                  class="emp-pager"
+                  @size-change="loadOrganEmployees"
+                  @current-change="loadOrganEmployees"
+                />
               </div>
             </el-card>
             <el-empty v-else description="请在左侧选择机构" />
@@ -121,14 +144,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { organizationApi, type BaseOrganPayload } from '@/api/organization'
+import { systemApi } from '@/api/system'
 import { organTypeLabel } from '@/utils/organization'
 import PageContainer from '@/components/PageContainer.vue'
 import OrganFormDialog from '@/components/organization/OrganFormDialog.vue'
 import OrganListPanel from '@/components/organization/OrganListPanel.vue'
+
+/** 与后端 SysUser 列表字段一致（机构页仅展示部分列） */
+type SysUserRow = {
+  username?: string
+  realName?: string
+  phone?: string
+  status?: number
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -142,6 +174,43 @@ const organDialogRef = ref<InstanceType<typeof OrganFormDialog>>()
 const listPanelRef = ref<InstanceType<typeof OrganListPanel>>()
 
 const activeTab = ref<'tree' | 'list'>('tree')
+
+const empLoading = ref(false)
+const empList = ref<SysUserRow[]>([])
+const empPagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
+
+async function loadOrganEmployees() {
+  const oid = detailView.value?.id
+  if (oid == null || oid === '') {
+    empList.value = []
+    empPagination.total = 0
+    return
+  }
+  empLoading.value = true
+  try {
+    const res = await systemApi.getUserList({
+      organId: String(oid),
+      pageNum: empPagination.pageNum,
+      pageSize: empPagination.pageSize
+    })
+    empList.value = (res.list ?? []) as unknown as SysUserRow[]
+    empPagination.total = res.total ?? 0
+  } catch (e) {
+    console.error(e)
+    empList.value = []
+    empPagination.total = 0
+  } finally {
+    empLoading.value = false
+  }
+}
+
+watch(
+  () => detailView.value?.id,
+  () => {
+    empPagination.pageNum = 1
+    loadOrganEmployees()
+  }
+)
 
 async function loadOrganizations() {
   try {
@@ -198,6 +267,7 @@ async function onOrganFormSuccess() {
   if (detailView.value?.id) {
     try {
       detailView.value = await organizationApi.getDetail(String(detailView.value.id))
+      await loadOrganEmployees()
     } catch {
       detailView.value = null
     }
@@ -264,7 +334,18 @@ watch(
   margin-top: 12px;
 
   h4 {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
+}
+
+.employee-tip {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.emp-pager {
+  margin-top: 12px;
+  justify-content: flex-end;
 }
 </style>

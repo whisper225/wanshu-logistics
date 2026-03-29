@@ -75,7 +75,7 @@ public class EmpDriverVehicleBindService {
         if (!StringUtils.hasText(user.getRealName()) || !StringUtils.hasText(user.getPhone())) {
             throw new BusinessException("司机信息未完善：请先填写姓名与手机号");
         }
-        if (driver.getOrganId() == null) {
+        if (user.getOrganId() == null) {
             throw new BusinessException("司机信息未完善：请先设置所属机构");
         }
         if (!StringUtils.hasText(driver.getVehicleTypes())) {

@@ -11,28 +11,56 @@
     {
       "root": "pages/user",
       "pages": [
-        { "path": "send/index", "style": { "navigationBarTitleText": "寄快递" } },
-        { "path": "track/index", "style": { "navigationBarTitleText": "查快递" } },
-        { "path": "address/index", "style": { "navigationBarTitleText": "地址簿" } },
-        { "path": "profile/index", "style": { "navigationBarTitleText": "个人中心" } }
+        {
+          "path": "send/index",
+          "style": {
+            "navigationBarTitleText": "寄快递",
+            "navigationBarBackgroundColor": "#FFFFFF",
+            "navigationBarTextStyle": "black"
+          }
+        },
+        {
+          "path": "track/index",
+          "style": {
+            "navigationBarTitleText": "查快递",
+            "navigationBarBackgroundColor": "#FFFFFF",
+            "navigationBarTextStyle": "black"
+          }
+        },
+        {
+          "path": "address/index",
+          "style": {
+            "navigationBarTitleText": "地址簿",
+            "navigationBarBackgroundColor": "#FFFFFF",
+            "navigationBarTextStyle": "black"
+          }
+        },
+        {
+          "path": "profile/index",
+          "style": {
+            "navigationBarTitleText": "个人中心",
+            "navigationBarBackgroundColor": "#1890FF",
+            "navigationBarTextStyle": "white"
+          }
+        }
       ]
     },
     {
       "root": "pages/courier",
       "pages": [
-        { "path": "pickup/index", "style": { "navigationBarTitleText": "取件" } },
+        { "path": "pickup/index",   "style": { "navigationBarTitleText": "取件" } },
         { "path": "delivery/index", "style": { "navigationBarTitleText": "派件" } },
-        { "path": "message/index", "style": { "navigationBarTitleText": "消息" } },
-        { "path": "history/index", "style": { "navigationBarTitleText": "历史取派" } },
-        { "path": "payment/index", "style": { "navigationBarTitleText": "收款/支付" } },
-        { "path": "freight/index", "style": { "navigationBarTitleText": "运费查询" } },
-        { "path": "profile/index", "style": { "navigationBarTitleText": "个人中心" } }
+        { "path": "message/index",  "style": { "navigationBarTitleText": "消息" } },
+        { "path": "history/index",  "style": { "navigationBarTitleText": "历史取派" } },
+        { "path": "payment/index",  "style": { "navigationBarTitleText": "收款/支付" } },
+        { "path": "freight/index",  "style": { "navigationBarTitleText": "运费查询" } },
+        { "path": "profile/index",  "style": { "navigationBarTitleText": "个人中心" } }
       ]
     },
     {
       "root": "pages/driver",
       "pages": [
-        { "path": "pickup/index", "style": { "navigationBarTitleText": "提货" } },
+        { "path": "pickup/index",  "style": { "navigationBarTitleText": "提货" } },
         { "path": "transit/index", "style": { "navigationBarTitleText": "在途" } },
         { "path": "deliver/index", "style": { "navigationBarTitleText": "交付" } },
         { "path": "profile/index", "style": { "navigationBarTitleText": "我的" } }
@@ -44,11 +72,5 @@
     "navigationBarTitleText": "万枢物流",
     "navigationBarBackgroundColor": "#FFFFFF",
     "backgroundColor": "#F5F5F5"
-  },
-  "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#1890FF",
-    "borderStyle": "black",
-    "list": []
   }
 }

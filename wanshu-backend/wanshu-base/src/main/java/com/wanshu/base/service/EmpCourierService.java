@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -46,6 +47,14 @@ public class EmpCourierService {
 
     public EmpCourier getById(Long id) {
         return courierMapper.selectById(id);
+    }
+
+    /** 按用户主键批量查询扩展行（主键与 sys_user.id 一致） */
+    public List<EmpCourier> listByUserIds(Collection<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return courierMapper.selectList(new LambdaQueryWrapper<EmpCourier>().in(EmpCourier::getId, userIds));
     }
 
     @Transactional

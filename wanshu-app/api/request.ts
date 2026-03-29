@@ -1,6 +1,19 @@
-/** 开发默认指向本地后端；可在 vite 环境变量中设置 VITE_API_BASE */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const BASE = ((import.meta as any).env && (import.meta as any).env.VITE_API_BASE) || 'http://127.0.0.1:8080/api'
+/**
+ * API 基址：vue-cli（HBuilderX）下用 process.env.VUE_APP_API_BASE；
+ * 可在项目根目录建 `.env` 写 `VUE_APP_API_BASE=https://你的域名/api`
+ * 未配置时默认本地后端。
+ */
+function getApiBase(): string {
+  try {
+    const env = (typeof process !== 'undefined' && process.env) ? process.env as Record<string, string | undefined> : {}
+    if (env.VUE_APP_API_BASE) return env.VUE_APP_API_BASE.replace(/\/$/, '')
+  } catch {
+    /* ignore */
+  }
+  return 'http://127.0.0.1:8080/api'
+}
+
+const BASE = getApiBase()
 
 interface RequestOptions {
   url: string

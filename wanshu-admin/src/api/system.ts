@@ -7,18 +7,25 @@ export const systemApi = {
     name?: string
     phone?: string
     organizationId?: string
+    /** 机构 ID（与 sys_user.organ_id 一致，建议字符串避免大整数精度丢失） */
+    organId?: string | number
     keyword?: string
     status?: string | number
     pageNum?: number
     pageSize?: number
   }) {
+    const organId =
+      params?.organId !== undefined && params?.organId !== null && params?.organId !== ''
+        ? String(params.organId)
+        : params?.organizationId
     return request.get<PageResult<User>>('/system/user/page', {
       params: {
         pageNum: params?.pageNum,
         pageSize: params?.pageSize,
         keyword: params?.keyword || params?.account || params?.name || params?.phone,
         status:
-          params?.status !== undefined && params?.status !== '' ? Number(params.status) : undefined
+          params?.status !== undefined && params?.status !== '' ? Number(params.status) : undefined,
+        organId
       }
     })
   },

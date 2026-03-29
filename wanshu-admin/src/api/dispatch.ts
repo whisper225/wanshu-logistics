@@ -27,6 +27,7 @@ export interface DispatchTripDto {
   periodType?: number
   departDay?: string
   departTime?: string
+  durationMinutes?: number
   status?: number
 }
 
@@ -237,11 +238,9 @@ export const dispatchApi = {
 
 function normalizeLineBody(data: Partial<DispatchLineDto>) {
   const body = { ...data } as Record<string, unknown>
-  if (body.startOrganId !== undefined && body.startOrganId !== '') {
-    body.startOrganId = Number(body.startOrganId)
-  }
-  if (body.endOrganId !== undefined && body.endOrganId !== '') {
-    body.endOrganId = Number(body.endOrganId)
-  }
+  // startOrganId / endOrganId 保持字符串传给后端，避免 JS Number 对雪花 ID 的精度丢失
+  // Spring Jackson 默认支持将 JSON 字符串反序列化为 Java Long
+  if (body.startOrganId === '') body.startOrganId = undefined
+  if (body.endOrganId === '') body.endOrganId = undefined
   return body
 }

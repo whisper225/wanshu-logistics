@@ -24,6 +24,10 @@
             <artifactId>wanshu-model</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.wanshu</groupId>
+            <artifactId>wanshu-base</artifactId>
+        </dependency>
+        <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-spring-boot3-starter</artifactId>
         </dependency>

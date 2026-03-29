@@ -21,5 +21,7 @@ public class DispatchTrip extends BaseEntity {
     private Integer periodType;
     private String departDay;
     private LocalTime departTime;
+    /** 预计行驶时长（分钟） */
+    private Integer durationMinutes;
     private Integer status;
 }
