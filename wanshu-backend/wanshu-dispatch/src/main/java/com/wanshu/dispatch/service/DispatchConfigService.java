@@ -22,6 +22,41 @@ public class DispatchConfigService {
     }
 
     /**
+     * 全局调度与成本配置（organ_id 为空的唯一一条；不存在则初始化）
+     */
+    public DispatchConfig getGlobal() {
+        DispatchConfig one = configMapper.selectOne(
+                new LambdaQueryWrapper<DispatchConfig>()
+                        .isNull(DispatchConfig::getOrganId)
+                        .last("LIMIT 1"));
+        if (one == null) {
+            DispatchConfig init = new DispatchConfig();
+            init.setLatestDispatchHour(1);
+            init.setMaxAssignTime(0);
+            init.setPriorityFirst(1);
+            init.setPrioritySecond(2);
+            init.setOrganId(null);
+            configMapper.insert(init);
+            return configMapper.selectById(init.getId());
+        }
+        return one;
+    }
+
+    @Transactional
+    public void saveGlobal(DispatchConfig full) {
+        DispatchConfig existing = getGlobal();
+        existing.setLatestDispatchHour(full.getLatestDispatchHour());
+        existing.setMaxAssignTime(full.getMaxAssignTime());
+        existing.setPriorityFirst(full.getPriorityFirst());
+        existing.setPrioritySecond(full.getPrioritySecond());
+        existing.setCostPerKmType1(full.getCostPerKmType1());
+        existing.setCostPerKmType2(full.getCostPerKmType2());
+        existing.setCostPerKmType3(full.getCostPerKmType3());
+        existing.setUpdatedTime(LocalDateTime.now());
+        configMapper.updateById(existing);
+    }
+
+    /**
      * 根据机构ID查询调度配置
      */
     public DispatchConfig getByOrganId(Long organId) {
@@ -42,6 +77,9 @@ public class DispatchConfigService {
                 existing.setMaxAssignTime(config.getMaxAssignTime());
                 existing.setPriorityFirst(config.getPriorityFirst());
                 existing.setPrioritySecond(config.getPrioritySecond());
+                existing.setCostPerKmType1(config.getCostPerKmType1());
+                existing.setCostPerKmType2(config.getCostPerKmType2());
+                existing.setCostPerKmType3(config.getCostPerKmType3());
                 existing.setUpdatedTime(LocalDateTime.now());
                 configMapper.updateById(existing);
             } else {

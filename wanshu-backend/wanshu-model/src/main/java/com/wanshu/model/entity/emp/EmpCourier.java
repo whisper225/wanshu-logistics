@@ -15,6 +15,5 @@ public class EmpCourier extends BaseEntity {
 
     private String employeeNo;
     private Long organId;
-    private String idCard;
     private Integer workStatus;
 }

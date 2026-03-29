@@ -94,11 +94,9 @@ export const systemApi = {
   },
 
   getOperationLogs(params?: {
-    userId?: string
-    module?: string
+    keyword?: string
     startTime?: string
     endTime?: string
-    keyword?: string
     pageNum?: number
     pageSize?: number
   }) {
@@ -106,16 +104,21 @@ export const systemApi = {
       params: {
         pageNum: params?.pageNum,
         pageSize: params?.pageSize,
-        keyword: params?.module || params?.keyword
+        keyword: params?.keyword,
+        startTime: params?.startTime,
+        endTime: params?.endTime
       }
     })
   },
 
+  getOperationLogDetail(id: string) {
+    return request.get<OperationLog>(`/system/log/operation/${id}`)
+  },
+
   getExceptionLogs(params?: {
-    module?: string
+    keyword?: string
     startTime?: string
     endTime?: string
-    keyword?: string
     pageNum?: number
     pageSize?: number
   }) {
@@ -123,9 +126,15 @@ export const systemApi = {
       params: {
         pageNum: params?.pageNum,
         pageSize: params?.pageSize,
-        keyword: params?.module || params?.keyword
+        keyword: params?.keyword,
+        startTime: params?.startTime,
+        endTime: params?.endTime
       }
     })
+  },
+
+  getExceptionLogDetail(id: string) {
+    return request.get<ExceptionLog>(`/system/log/exception/${id}`)
   },
 
   getDashboardStats() {

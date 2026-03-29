@@ -39,17 +39,18 @@ export const vehicleApi = {
   },
 
   getList(params?: {
-    typeId?: string
+    keyword?: string
     licensePlate?: string
     status?: string | number
     pageNum?: number
     pageSize?: number
   }) {
+    const kw = params?.keyword ?? params?.licensePlate
     return request.get<PageResult<Vehicle>>('/base/vehicle/page', {
       params: {
         pageNum: params?.pageNum,
         pageSize: params?.pageSize,
-        keyword: params?.licensePlate,
+        keyword: kw,
         status: params?.status !== undefined && params?.status !== '' ? Number(params.status) : undefined
       }
     })
@@ -71,8 +72,14 @@ export const vehicleApi = {
     return request.delete<void>(`/base/vehicle/${id}`)
   },
 
-  updateStatus(id: string, status: number) {
-    return request.put<void>(`/base/vehicle/${id}`, { status })
+  /** 仅更新 status（后端 Lambda 更新，不误伤其它字段） */
+  updateVehicleStatus(id: string, status: number) {
+    return request.put<void>(`/base/vehicle/${id}/status`, { status })
+  },
+
+  /** 已绑定司机用户 ID 列表（与 sys_user.id 一致） */
+  getDriverIds(vehicleId: string) {
+    return request.get<(string | number)[]>(`/base/vehicle/${vehicleId}/drivers`)
   },
 
   bindDrivers(id: string, driverIds: string[]) {

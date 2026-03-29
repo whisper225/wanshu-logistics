@@ -75,44 +75,45 @@ export interface EconomicZoneItem {
   lightThrowRatio?: number
 }
 
+/** 与后端 BaseVehicleType 一致 */
 export interface VehicleType {
-  id: string
-  code: string
-  name: string
-  loadWeight: number
-  loadVolume: number
-  length: number
-  width: number
-  height: number
-  createdAt: string
+  id?: string | number
+  typeNumber?: string
+  typeName?: string
+  loadWeight?: number
+  loadVolume?: number
+  length?: number
+  width?: number
+  height?: number
+  createdTime?: string
+  updatedTime?: string
 }
 
+/** 与后端 BaseVehicle 一致 */
 export interface Vehicle {
-  id: string
-  code: string
-  typeId: string
-  typeName: string
-  licensePlate: string
-  gpsDeviceId: string
-  loadWeight: number
-  loadVolume: number
-  status: 'AVAILABLE' | 'DISABLED'
-  organizationId: string
-  organizationName: string
-  drivers?: Driver[]
-  routes?: string[]
-  createdAt: string
+  id?: string | number
+  vehicleNumber?: string
+  vehicleTypeId?: string | number
+  licensePlate?: string
+  loadWeight?: number
+  loadVolume?: number
+  organId?: string | number
+  /** 0=停用 1=可用 */
+  status?: number
+  licenseImage?: string
+  createdTime?: string
+  updatedTime?: string
 }
 
 export interface VehicleDetail extends Vehicle {
-  registrationInfo: {
-    owner: string
-    vehicleModel: string
-    engineNumber: string
-    vinNumber: string
-    registrationDate: string
-    issueDate: string
-    images: string[]
+  registrationInfo?: {
+    owner?: string
+    vehicleModel?: string
+    engineNumber?: string
+    vinNumber?: string
+    registrationDate?: string
+    issueDate?: string
+    images?: string[]
   }
 }
 
@@ -376,23 +377,36 @@ export interface Permission {
   children?: Permission[]
 }
 
+/** 与后端 SysOperationLog 一致 */
 export interface OperationLog {
-  id: string
-  userId: string
-  userName: string
-  module: string
-  operation: string
-  detail: string
-  ip: string
-  createdAt: string
+  id?: string
+  module?: string
+  operation?: string
+  method?: string
+  requestUrl?: string
+  requestParams?: string
+  responseData?: string
+  operatorId?: string
+  operatorName?: string
+  operatorIp?: string
+  costTime?: number
+  status?: number
+  createdTime?: string
 }
 
+/** 与后端 SysExceptionLog 一致 */
 export interface ExceptionLog {
-  id: string
-  module: string
-  errorMessage: string
-  stackTrace: string
-  createdAt: string
+  id?: string
+  module?: string
+  requestUrl?: string
+  requestParams?: string
+  exceptionName?: string
+  exceptionMsg?: string
+  stackTrace?: string
+  operatorId?: string
+  operatorName?: string
+  operatorIp?: string
+  createdTime?: string
 }
 
 export interface DashboardStats {

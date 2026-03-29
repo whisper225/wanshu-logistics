@@ -1,8 +1,6 @@
 package com.wanshu.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,9 +12,8 @@ import java.time.LocalDateTime;
 @Data
 public abstract class BaseEntity implements Serializable {
 
-    /** JSON 输出为字符串，避免前端 Number 精度丢失（雪花 ID） */
+    /** 主键（雪花）；JSON 序列化见全局 JacksonConfig（大范围 Long 输出为字符串） */
     @TableId(type = IdType.ASSIGN_ID)
-    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     @TableLogic

@@ -47,6 +47,19 @@ public class SysRoleService {
         return role;
     }
 
+    /**
+     * 按角色编码查询（如 COURIER、DRIVER），不存在则抛业务异常。
+     */
+    public SysRole requireByRoleCode(String roleCode) {
+        LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysRole::getRoleCode, roleCode);
+        SysRole role = roleMapper.selectOne(wrapper);
+        if (role == null) {
+            throw new BusinessException("角色不存在或未初始化，请执行 docs/sql/init-admin-data.sql 或 migrate-emp-employee-no-and-roles.sql: " + roleCode);
+        }
+        return role;
+    }
+
     @Transactional
     public void create(SysRole role) {
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();

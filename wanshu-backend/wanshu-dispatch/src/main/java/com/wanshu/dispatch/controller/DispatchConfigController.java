@@ -24,6 +24,19 @@ public class DispatchConfigController {
         return R.ok(configService.listAll());
     }
 
+    @Operation(summary = "全局调度与成本配置（路线类型成本 + 调度规则，organ_id 为空）")
+    @GetMapping("/global")
+    public R<DispatchConfig> global() {
+        return R.ok(configService.getGlobal());
+    }
+
+    @Operation(summary = "保存全局调度与成本配置")
+    @PutMapping("/global")
+    public R<Void> saveGlobal(@RequestBody DispatchConfig config) {
+        configService.saveGlobal(config);
+        return R.ok();
+    }
+
     @Operation(summary = "保存配置")
     @PostMapping
     public R<Void> save(@RequestBody DispatchConfig config) {

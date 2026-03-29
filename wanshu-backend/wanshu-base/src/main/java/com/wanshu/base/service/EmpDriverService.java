@@ -8,6 +8,9 @@ import com.wanshu.base.mapper.EmpDriverMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,13 +18,21 @@ public class EmpDriverService {
 
     private final EmpDriverMapper driverMapper;
 
-    public IPage<EmpDriver> page(int pageNum, int pageSize, Long organId, Integer workStatus) {
+    public IPage<EmpDriver> page(int pageNum, int pageSize, Long organId, Integer workStatus,
+                                 String keyword, List<Long> userIdsMatchingKeyword) {
         LambdaQueryWrapper<EmpDriver> wrapper = new LambdaQueryWrapper<>();
         if (organId != null) {
             wrapper.eq(EmpDriver::getOrganId, organId);
         }
         if (workStatus != null) {
             wrapper.eq(EmpDriver::getWorkStatus, workStatus);
+        }
+        if (StringUtils.hasText(keyword)) {
+            if (userIdsMatchingKeyword == null || userIdsMatchingKeyword.isEmpty()) {
+                wrapper.apply("1=0");
+            } else {
+                wrapper.in(EmpDriver::getId, userIdsMatchingKeyword);
+            }
         }
         wrapper.orderByDesc(EmpDriver::getCreatedTime);
         return driverMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);

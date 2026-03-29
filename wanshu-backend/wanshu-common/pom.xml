@@ -52,6 +52,15 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- Sa-Token：全局异常处理中解析当前登录用户写入异常日志 -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.wanshu</groupId>
+            <artifactId>wanshu-model</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

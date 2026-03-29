@@ -85,6 +85,14 @@ public class BaseVehicleController {
         return R.ok(result);
     }
 
+    @Operation(summary = "更新车辆启用状态（仅改 status，0=停用 1=可用）")
+    @PutMapping("/{id}/status")
+    public R<Void> updateVehicleStatus(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
+        Integer status = body != null ? body.get("status") : null;
+        vehicleService.updateVehicleStatus(id, status);
+        return R.ok();
+    }
+
     @Operation(summary = "车辆详情")
     @GetMapping("/{id}")
     public R<BaseVehicle> detail(@PathVariable Long id) {

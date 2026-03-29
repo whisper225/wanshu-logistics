@@ -12,6 +12,11 @@ USE `wanshu_logistics`;
 INSERT INTO `sys_role` (`id`, `role_name`, `role_code`, `description`, `login_scope`, `status`, `deleted`, `created_time`, `updated_time`)
 VALUES (1, 'SuperAdmin', 'SUPER_ADMIN', 'bootstrap', 'admin', 1, 0, NOW(), NOW());
 
+INSERT INTO `sys_role` (`id`, `role_name`, `role_code`, `description`, `login_scope`, `status`, `deleted`, `created_time`, `updated_time`)
+VALUES
+    (2, 'Courier', 'COURIER', '快递员', 'courier', 1, 0, NOW(), NOW()),
+    (3, 'Driver', 'DRIVER', '司机', 'driver', 1, 0, NOW(), NOW());
+
 INSERT INTO `sys_user` (`id`, `username`, `password`, `real_name`, `status`, `deleted`, `created_time`, `updated_time`)
 VALUES (1, 'whsiper225', '$2b$12$MEc.ZGYbvDOe4Rxh5y.jLuI3nFKGZsrHBBGtQjDJXQ18yZjxiDrSq', 'Admin', 1, 0, NOW(), NOW());
 

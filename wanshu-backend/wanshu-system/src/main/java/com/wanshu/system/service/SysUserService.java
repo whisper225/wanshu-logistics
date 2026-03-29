@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -58,6 +60,28 @@ public class SysUserService {
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysUser::getPhone, phone);
         return userMapper.selectOne(wrapper);
+    }
+
+    /**
+     * 关键词匹配用户名、真实姓名、手机号，返回用户 id 列表（用于员工分页与扩展表联查）。
+     */
+    public List<Long> findIdsByKeyword(String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return Collections.emptyList();
+        }
+        String kw = keyword.trim();
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(q -> q.like(SysUser::getUsername, kw)
+                .or().like(SysUser::getRealName, kw)
+                .or().like(SysUser::getPhone, kw));
+        return userMapper.selectList(wrapper).stream().map(SysUser::getId).toList();
+    }
+
+    public List<SysUser> listByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, ids));
     }
 
     @Transactional

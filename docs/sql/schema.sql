@@ -271,9 +271,10 @@ CREATE TABLE base_vehicle_driver (
 -- 快递员扩展表
 DROP TABLE IF EXISTS emp_courier;
 CREATE TABLE emp_courier (
-    id           BIGINT   NOT NULL COMMENT '主键ID（=sys_user.id）',
-    organ_id     BIGINT   DEFAULT NULL COMMENT '所属营业部ID',
-    work_status  TINYINT  DEFAULT 1 COMMENT '工作状态: 0=休息 1=上班',
+    id           BIGINT       NOT NULL COMMENT '主键ID（=sys_user.id）',
+    organ_id     BIGINT       DEFAULT NULL COMMENT '所属营业部ID',
+    employee_no  VARCHAR(50)  DEFAULT NULL COMMENT '工号（业务编号，非身份证）',
+    work_status  TINYINT      DEFAULT 1 COMMENT '工作状态: 0=休息 1=上班',
     deleted      TINYINT  DEFAULT 0 COMMENT '逻辑删除',
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

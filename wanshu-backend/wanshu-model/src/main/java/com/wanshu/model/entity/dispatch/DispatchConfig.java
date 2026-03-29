@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -21,6 +22,12 @@ public class DispatchConfig implements Serializable {
     private Integer maxAssignTime;
     private Integer priorityFirst;
     private Integer prioritySecond;
+    /** 干线（线路类型 1）默认每公里成本（元） */
+    private BigDecimal costPerKmType1;
+    /** 支线（线路类型 2）默认每公里成本（元） */
+    private BigDecimal costPerKmType2;
+    /** 专线（线路类型 3）默认每公里成本（元） */
+    private BigDecimal costPerKmType3;
     private Long organId;
     private LocalDateTime updatedTime;
 }

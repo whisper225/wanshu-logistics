@@ -64,6 +64,12 @@ const routes: RouteRecordRaw[] = [
             meta: { title: '车辆管理' },
           },
           {
+            path: 'detail/:id',
+            name: 'VehicleDetailPage',
+            component: () => import('@/views/basic/vehicle/detail.vue'),
+            meta: { title: '车辆详情', hidden: true },
+          },
+          {
             path: 'return-log',
             name: 'ReturnLog',
             component: () => import('@/views/basic/return-log/index.vue'),
@@ -87,6 +93,12 @@ const routes: RouteRecordRaw[] = [
             name: 'Driver',
             component: () => import('@/views/employee/driver/index.vue'),
             meta: { title: '司机管理' },
+          },
+          {
+            path: 'driver-detail/:id',
+            name: 'DriverDetailPage',
+            component: () => import('@/views/employee/driver/detail.vue'),
+            meta: { title: '司机详情', hidden: true },
           },
         ],
       },

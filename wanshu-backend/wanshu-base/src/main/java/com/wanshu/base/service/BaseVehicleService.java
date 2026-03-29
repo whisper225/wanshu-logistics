@@ -1,6 +1,7 @@
 package com.wanshu.base.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wanshu.common.exception.BusinessException;
@@ -89,6 +90,11 @@ public class BaseVehicleService {
         return vehicle;
     }
 
+    /** 不存在时返回 null，不抛异常 */
+    public BaseVehicle findVehicleById(Long id) {
+        return vehicleMapper.selectById(id);
+    }
+
     @Transactional
     public void createVehicle(BaseVehicle vehicle) {
         vehicleMapper.insert(vehicle);
@@ -104,12 +110,33 @@ public class BaseVehicleService {
         vehicleMapper.deleteById(id);
     }
 
+    /**
+     * 仅更新启用状态，避免整对象 PUT 误清空字段。0=停用，1=可用。
+     */
+    @Transactional
+    public void updateVehicleStatus(Long id, Integer status) {
+        if (status == null || (status != 0 && status != 1)) {
+            throw new BusinessException("状态只能为 0（停用）或 1（可用）");
+        }
+        getVehicleById(id);
+        vehicleMapper.update(null, new LambdaUpdateWrapper<BaseVehicle>()
+                .eq(BaseVehicle::getId, id)
+                .set(BaseVehicle::getStatus, status));
+    }
+
     // ========== 车辆司机绑定 ==========
 
     public List<Long> getDriverIds(Long vehicleId) {
         return vehicleDriverMapper.selectList(
                 new LambdaQueryWrapper<BaseVehicleDriver>().eq(BaseVehicleDriver::getVehicleId, vehicleId)
         ).stream().map(BaseVehicleDriver::getDriverId).toList();
+    }
+
+    /** 司机已绑定的车辆 ID 列表 */
+    public List<Long> getVehicleIdsByDriverId(Long driverId) {
+        return vehicleDriverMapper.selectList(
+                new LambdaQueryWrapper<BaseVehicleDriver>().eq(BaseVehicleDriver::getDriverId, driverId)
+        ).stream().map(BaseVehicleDriver::getVehicleId).toList();
     }
 
     @Transactional

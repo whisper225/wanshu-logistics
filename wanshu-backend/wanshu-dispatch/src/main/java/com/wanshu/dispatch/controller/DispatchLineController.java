@@ -2,6 +2,7 @@ package com.wanshu.dispatch.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wanshu.common.result.R;
+import com.wanshu.model.entity.base.BaseVehicle;
 import com.wanshu.model.entity.dispatch.DispatchLine;
 import com.wanshu.model.entity.dispatch.DispatchTrip;
 import com.wanshu.dispatch.service.DispatchLineService;
@@ -66,15 +67,15 @@ public class DispatchLineController {
         return R.ok();
     }
 
-    // ========== 班次 ==========
+    // ========== 车次 ==========
 
-    @Operation(summary = "获取线路班次列表")
+    @Operation(summary = "获取线路车次列表")
     @GetMapping("/{id}/trips")
     public R<List<DispatchTrip>> getTrips(@PathVariable Long id) {
         return R.ok(lineService.getTrips(id));
     }
 
-    @Operation(summary = "创建班次")
+    @Operation(summary = "创建车次")
     @PostMapping("/{id}/trips")
     public R<Void> createTrip(@PathVariable Long id, @RequestBody DispatchTrip trip) {
         trip.setLineId(id);
@@ -82,7 +83,7 @@ public class DispatchLineController {
         return R.ok();
     }
 
-    @Operation(summary = "更新班次")
+    @Operation(summary = "更新车次")
     @PutMapping("/trips/{tripId}")
     public R<Void> updateTrip(@PathVariable Long tripId, @RequestBody DispatchTrip trip) {
         trip.setId(tripId);
@@ -90,10 +91,42 @@ public class DispatchLineController {
         return R.ok();
     }
 
-    @Operation(summary = "删除班次")
+    @Operation(summary = "删除车次")
     @DeleteMapping("/trips/{tripId}")
     public R<Void> deleteTrip(@PathVariable Long tripId) {
         lineService.deleteTrip(tripId);
+        return R.ok();
+    }
+
+    // ========== 车次车辆 ==========
+
+    @Operation(summary = "车次已安排车辆列表")
+    @GetMapping("/trips/{tripId}/vehicles")
+    public R<List<Map<String, Object>>> tripVehicles(@PathVariable Long tripId) {
+        return R.ok(lineService.listTripVehicles(tripId));
+    }
+
+    @Operation(summary = "可安排车辆（本线起止机构、可用、未在运输中、未在本车次）")
+    @GetMapping("/trips/{tripId}/eligible-vehicles")
+    public R<List<BaseVehicle>> eligibleVehicles(
+            @PathVariable Long tripId,
+            @RequestParam(required = false) String keyword) {
+        return R.ok(lineService.listEligibleVehiclesForTrip(tripId, keyword));
+    }
+
+    @Operation(summary = "安排车辆到车次")
+    @PostMapping("/trips/{tripId}/vehicles")
+    public R<Void> addTripVehicle(
+            @PathVariable Long tripId,
+            @RequestParam Long vehicleId) {
+        lineService.addVehicleToTrip(tripId, vehicleId);
+        return R.ok();
+    }
+
+    @Operation(summary = "从车次移除车辆")
+    @DeleteMapping("/trips/{tripId}/vehicles/{vehicleId}")
+    public R<Void> removeTripVehicle(@PathVariable Long tripId, @PathVariable Long vehicleId) {
+        lineService.removeVehicleFromTrip(tripId, vehicleId);
         return R.ok();
     }
 }

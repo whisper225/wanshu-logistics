@@ -1,8 +1,24 @@
 <template>
-  <PageContainer title="快递员管理">
+  <PageContainer title="快递员管理（仅查看，可维护作业范围）">
     <SearchForm v-model="searchForm" @search="handleSearch" @reset="handleReset">
+      <el-form-item label="关键词">
+        <el-input v-model="searchForm.keyword" placeholder="用户名/姓名/手机/工号" clearable />
+      </el-form-item>
       <el-form-item label="所属营业部">
-        <el-input v-model="searchForm.organId" placeholder="营业部ID" clearable />
+        <el-select
+          v-model="searchForm.organId"
+          placeholder="请选择机构"
+          clearable
+          filterable
+          style="width: 220px"
+        >
+          <el-option
+            v-for="o in flatOrgOptions"
+            :key="o.value"
+            :label="o.label"
+            :value="o.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="工作状态">
         <el-select v-model="searchForm.workStatus" placeholder="请选择" clearable>
@@ -10,16 +26,15 @@
           <el-option label="休息" :value="0" />
         </el-select>
       </el-form-item>
-      <template #actions>
-        <el-button type="primary" @click="handleAdd">新增快递员</el-button>
-      </template>
     </SearchForm>
 
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column prop="id" label="快递员ID" width="180" />
+      <el-table-column prop="id" label="用户ID" width="160" show-overflow-tooltip />
+      <el-table-column prop="username" label="登录账号" width="120" />
+      <el-table-column prop="realName" label="姓名" width="100" />
+      <el-table-column prop="phone" label="手机" width="120" />
       <el-table-column prop="employeeNo" label="工号" width="120" />
-      <el-table-column prop="organId" label="所属营业部" width="180" />
-      <el-table-column prop="idCard" label="身份证号" width="180" />
+      <el-table-column prop="organName" label="所属营业部" min-width="140" show-overflow-tooltip />
       <el-table-column prop="workStatus" label="工作状态" width="100">
         <template #default="{ row }">
           <el-tag :type="row.workStatus === 1 ? 'success' : 'info'">
@@ -27,13 +42,9 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-          <el-button link type="primary" @click="handleToggleStatus(row)">
-            {{ row.workStatus === 1 ? '设为休息' : '设为上班' }}
-          </el-button>
-          <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+          <el-button link type="primary" @click="openScopeDialog(row)">作业范围</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -48,27 +59,23 @@
       @current-change="loadData"
     />
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
-      <el-form :model="formData" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="工号" prop="employeeNo">
-          <el-input v-model="formData.employeeNo" />
-        </el-form-item>
-        <el-form-item label="所属营业部" prop="organId">
-          <el-input v-model="formData.organId" placeholder="营业部ID" />
-        </el-form-item>
-        <el-form-item label="身份证号">
-          <el-input v-model="formData.idCard" />
-        </el-form-item>
-        <el-form-item label="工作状态">
-          <el-radio-group v-model="formData.workStatus">
-            <el-radio :value="1">上班</el-radio>
-            <el-radio :value="0">休息</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
+    <el-dialog v-model="scopeDialogVisible" title="快递员作业范围" width="640px" destroy-on-close @closed="scopeCourierId = null">
+      <el-alert type="info" show-icon :closable="false" class="mb-3">
+        省 / 市 / 区 使用国标 adcode，与机构作业范围一致。
+      </el-alert>
+      <el-cascader
+        v-model="scopeSelectedPaths"
+        :options="areaOptions"
+        :props="cascaderProps"
+        placeholder="请选择省 / 市 / 区（可多选）"
+        style="width: 100%"
+        clearable
+        collapse-tags
+        collapse-tags-tooltip
+      />
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="scopeDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="scopeSaving" @click="saveScopes">保存</el-button>
       </template>
     </el-dialog>
   </PageContainer>
@@ -76,83 +83,137 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { employeeApi } from '@/api/employee'
+import { ElMessage } from 'element-plus'
+import { regionData } from 'element-china-area-data'
+import { employeeApi, type EmpCourierVO } from '@/api/employee'
+import { organizationApi } from '@/api/organization'
+import type { OrganScope } from '@/api/organization'
+import { pathsToOrganScopes, scopesToPaths } from '@/utils/regionScope'
 import PageContainer from '@/components/PageContainer.vue'
 import SearchForm from '@/components/SearchForm.vue'
 
+type TreeOrg = Record<string, unknown> & { id?: string | number; name?: string; children?: TreeOrg[] }
+
 const loading = ref(false)
-const tableData = ref<any[]>([])
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const formRef = ref<FormInstance>()
+const tableData = ref<EmpCourierVO[]>([])
+const flatOrgOptions = ref<{ value: string; label: string }[]>([])
 
-const searchForm = reactive({ organId: '', workStatus: undefined as number | undefined })
-const pagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
-const formData = reactive<any>({
-  id: undefined, employeeNo: '', organId: '', idCard: '', workStatus: 1
+const searchForm = reactive({
+  keyword: '',
+  organId: undefined as string | undefined,
+  workStatus: undefined as number | undefined
 })
+const pagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
 
-const rules: FormRules = {
-  employeeNo: [{ required: true, message: '请输入工号', trigger: 'blur' }],
-  organId: [{ required: true, message: '请选择营业部', trigger: 'blur' }]
+const areaOptions = ref(regionData)
+const cascaderProps = {
+  multiple: true,
+  checkStrictly: true,
+  value: 'value',
+  label: 'label',
+  children: 'children'
+}
+const scopeDialogVisible = ref(false)
+const scopeCourierId = ref<string | null>(null)
+const scopeSelectedPaths = ref<string[][]>([])
+const scopeSaving = ref(false)
+
+function flattenOrgTree(nodes: TreeOrg[], depth = 0): { value: string; label: string }[] {
+  const out: { value: string; label: string }[] = []
+  for (const n of nodes) {
+    const id = n.id != null ? String(n.id) : ''
+    const name = String(n.name ?? '')
+    if (id) {
+      out.push({ value: id, label: `${'　'.repeat(depth)}${name}` })
+    }
+    if (n.children?.length) {
+      out.push(...flattenOrgTree(n.children, depth + 1))
+    }
+  }
+  return out
+}
+
+const loadOrgTree = async () => {
+  try {
+    const tree = (await organizationApi.getTree()) as unknown as TreeOrg[]
+    flatOrgOptions.value = flattenOrgTree(Array.isArray(tree) ? tree : [])
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const loadData = async () => {
   loading.value = true
   try {
-    const params: any = { ...pagination }
+    const params: Record<string, unknown> = { ...pagination }
+    if (searchForm.keyword) params.keyword = searchForm.keyword
     if (searchForm.organId) params.organId = searchForm.organId
     if (searchForm.workStatus !== undefined) params.workStatus = searchForm.workStatus
-    const res = await employeeApi.getCourierList(params)
+    const res = await employeeApi.getCourierList(params as Parameters<typeof employeeApi.getCourierList>[0])
     tableData.value = res.list
     pagination.total = res.total
-  } catch (e) { console.error(e) } finally { loading.value = false }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
 }
 
-const handleSearch = () => { pagination.pageNum = 1; loadData() }
-const handleReset = () => { searchForm.organId = ''; searchForm.workStatus = undefined; handleSearch() }
-
-const handleAdd = () => {
-  dialogTitle.value = '新增快递员'
-  Object.assign(formData, { id: undefined, employeeNo: '', organId: '', idCard: '', workStatus: 1 })
-  dialogVisible.value = true
-}
-
-const handleEdit = (row: any) => {
-  dialogTitle.value = '编辑快递员'
-  Object.assign(formData, row)
-  dialogVisible.value = true
-}
-
-const handleDelete = async (row: any) => {
-  await ElMessageBox.confirm('确定删除该快递员吗？', '提示', { type: 'warning' })
-  await employeeApi.deleteCourier(row.id)
-  ElMessage.success('删除成功')
+const handleSearch = () => {
+  pagination.pageNum = 1
   loadData()
 }
-
-const handleToggleStatus = async (row: any) => {
-  const newStatus = row.workStatus === 1 ? 0 : 1
-  await employeeApi.updateCourier(row.id, { workStatus: newStatus })
-  ElMessage.success('状态更新成功')
-  loadData()
+const handleReset = () => {
+  searchForm.keyword = ''
+  searchForm.organId = undefined
+  searchForm.workStatus = undefined
+  handleSearch()
 }
 
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid) => {
-    if (!valid) return
-    if (formData.id) {
-      await employeeApi.updateCourier(formData.id, formData)
-    } else {
-      await employeeApi.createCourier(formData)
-    }
+const openScopeDialog = async (row: EmpCourierVO) => {
+  scopeCourierId.value = String(row.id)
+  scopeDialogVisible.value = true
+  scopeSelectedPaths.value = []
+  try {
+    const scopes = await employeeApi.getCourierScopes(row.id)
+    const asOrgan: OrganScope[] = (scopes || []).map((s) => ({
+      provinceId: s.provinceId,
+      cityId: s.cityId,
+      countyId: s.countyId
+    }))
+    scopeSelectedPaths.value = scopesToPaths(asOrgan)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const saveScopes = async () => {
+  if (!scopeCourierId.value) return
+  scopeSaving.value = true
+  try {
+    const rows = pathsToOrganScopes(scopeSelectedPaths.value).map((s) => ({
+      provinceId: s.provinceId,
+      cityId: s.cityId,
+      countyId: s.countyId
+    }))
+    await employeeApi.updateCourierScopes(scopeCourierId.value, rows)
     ElMessage.success('保存成功')
-    dialogVisible.value = false
-    loadData()
-  })
+    scopeDialogVisible.value = false
+  } catch (e) {
+    console.error(e)
+  } finally {
+    scopeSaving.value = false
+  }
 }
 
-onMounted(() => loadData())
+onMounted(async () => {
+  await loadOrgTree()
+  loadData()
+})
 </script>
+
+<style scoped>
+.mb-3 {
+  margin-bottom: 12px;
+}
+</style>

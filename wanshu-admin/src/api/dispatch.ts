@@ -1,5 +1,5 @@
 import { request } from '@/utils/request'
-import type { TransportTask, PickupTask, DeliveryTask, PageResult } from '@/types'
+import type { TransportTask, PickupTask, DeliveryTask, PageResult, Vehicle } from '@/types'
 
 /** 线路（与后端 DispatchLine 字段一致） */
 export interface DispatchLineDto {
@@ -9,9 +9,52 @@ export interface DispatchLineDto {
   lineType?: number
   startOrganId?: number | string
   endOrganId?: number | string
+  /** 距离（米），新增时后端自动计算，编辑时可手动修改 */
   distance?: number
+  /** 成本（元），新增时后端自动计算，编辑时可手动修改 */
+  cost?: number
   estimatedTime?: number
   status?: number
+  startOrganName?: string
+  endOrganName?: string
+}
+
+export interface DispatchTripDto {
+  id?: number
+  tripNumber?: string
+  tripName?: string
+  lineId?: number
+  periodType?: number
+  departDay?: string
+  departTime?: string
+  status?: number
+}
+
+export interface TripVehicleRow {
+  id: string
+  tripId: string
+  vehicleId: string
+  licensePlate?: string
+  vehicleNumber?: string
+  organId?: number | string
+  vehicleTypeId?: number | string
+  status?: number
+}
+
+/** 全局调度配置（dispatch_config 表 organ_id 为空的一条） */
+export interface GlobalDispatchConfigDto {
+  id?: string | number
+  /** 最晚任务下发时间（小时前） */
+  latestDispatchHour?: number
+  /** 优先匹配方式：1=转运次数最少 2=成本最低 */
+  priorityFirst?: number
+  /** 干线(类型1)默认每公里成本（元） */
+  costPerKmType1?: number
+  /** 支线(类型2)默认每公里成本（元） */
+  costPerKmType2?: number
+  /** 接驳路线(类型3)默认每公里成本（元） */
+  costPerKmType3?: number
+  organId?: number | null
 }
 
 export const dispatchApi = {
@@ -66,6 +109,35 @@ export const dispatchApi = {
 
   deleteTrip(tripId: string | number) {
     return request.delete<void>(`/dispatch/line/trips/${tripId}`)
+  },
+
+  getTripVehicles(tripId: string | number) {
+    return request.get<TripVehicleRow[]>(`/dispatch/line/trips/${tripId}/vehicles`)
+  },
+
+  getEligibleTripVehicles(tripId: string | number, keyword?: string) {
+    return request.get<Vehicle[]>(`/dispatch/line/trips/${tripId}/eligible-vehicles`, {
+      params: { keyword }
+    })
+  },
+
+  addTripVehicle(tripId: string | number, vehicleId: string | number) {
+    return request.post<void>(`/dispatch/line/trips/${tripId}/vehicles`, {}, {
+      params: { vehicleId }
+    })
+  },
+
+  removeTripVehicle(tripId: string | number, vehicleId: string | number) {
+    return request.delete<void>(`/dispatch/line/trips/${tripId}/vehicles/${vehicleId}`)
+  },
+
+  /** 全局：路线类型成本 + 调度规则 */
+  getGlobalDispatchConfig() {
+    return request.get<GlobalDispatchConfigDto>('/dispatch/config/global')
+  },
+
+  saveGlobalDispatchConfig(data: GlobalDispatchConfigDto) {
+    return request.put<void>('/dispatch/config/global', data)
   },
 
   getTransportTaskList(params?: {
