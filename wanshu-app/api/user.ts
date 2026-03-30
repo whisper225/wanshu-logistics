@@ -22,10 +22,15 @@ export interface UserInfo {
   phone: string
   avatar: string
   gender: number
+  birthday?: string
 }
 
 export function getUserInfo() {
   return request<UserInfo>({ url: '/app/user' })
+}
+
+export function updateUserInfo(body: { gender?: number; birthday?: string; realName?: string }) {
+  return request<void>({ url: '/app/user', method: 'PUT', data: body as unknown as Record<string, unknown> })
 }
 
 // ====== 地址簿 ======

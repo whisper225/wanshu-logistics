@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wanshu.base.mapper.BaseOrganMapper;
 import com.wanshu.base.mapper.BaseVehicleMapper;
 import com.wanshu.common.event.LineGraphDeleteEvent;
-import com.wanshu.common.event.LineGraphUpsertEvent;
+import com.wanshu.dispatch.event.LineGraphUpsertEvent;
 import com.wanshu.common.exception.BusinessException;
 import com.wanshu.common.result.ResultCode;
 import com.wanshu.dispatch.mapper.DispatchConfigMapper;

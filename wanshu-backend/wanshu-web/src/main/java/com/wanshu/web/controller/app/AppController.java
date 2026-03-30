@@ -4,17 +4,23 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.wanshu.base.service.AppAddressBookService;
 import com.wanshu.common.exception.BusinessException;
 import com.wanshu.common.result.R;
+import com.wanshu.common.utils.OssUtil;
 import com.wanshu.model.entity.app.AppAddressBook;
 import com.wanshu.model.entity.biz.BizOrder;
 import com.wanshu.model.entity.biz.BizWaybill;
+import com.wanshu.model.entity.sys.SysUser;
+import com.wanshu.model.entity.track.TrackRoute;
 import com.wanshu.system.service.SysUserService;
 import com.wanshu.web.service.app.AppOrderService;
+import com.wanshu.web.service.app.AppTrackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +32,9 @@ public class AppController {
 
     private final AppAddressBookService addressBookService;
     private final AppOrderService appOrderService;
+    private final AppTrackService appTrackService;
     private final SysUserService sysUserService;
+    private final OssUtil ossUtil;
 
     // ========== 个人信息 ==========
 
@@ -34,17 +42,56 @@ public class AppController {
     @GetMapping("/user")
     public R<Map<String, Object>> getUserInfo() {
         Long userId = StpUtil.getLoginIdAsLong();
-        var user = sysUserService.getById(userId);
-        if (user == null) {
-            throw new BusinessException("用户不存在");
-        }
+        SysUser user = sysUserService.getById(userId);
         return R.ok(Map.of(
                 "id", user.getId(),
                 "name", user.getRealName() != null ? user.getRealName() : "",
                 "phone", user.getPhone() != null ? user.getPhone() : "",
                 "avatar", user.getAvatar() != null ? user.getAvatar() : "",
-                "gender", user.getGender() != null ? user.getGender() : 0
+                "gender", user.getGender() != null ? user.getGender() : 0,
+                "birthday", user.getBirthday() != null ? user.getBirthday().toString() : ""
         ));
+    }
+
+    @Operation(summary = "更新个人信息（性别、生日）")
+    @PutMapping("/user")
+    public R<Void> updateUserInfo(@RequestBody Map<String, Object> body) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        SysUser update = new SysUser();
+        update.setId(userId);
+        if (body.containsKey("gender")) {
+            update.setGender(Integer.valueOf(body.get("gender").toString()));
+        }
+        if (body.containsKey("birthday") && body.get("birthday") != null
+                && !body.get("birthday").toString().isBlank()) {
+            update.setBirthday(LocalDate.parse(body.get("birthday").toString()));
+        }
+        if (body.containsKey("realName") && body.get("realName") != null) {
+            update.setRealName(body.get("realName").toString());
+        }
+        sysUserService.update(update);
+        return R.ok();
+    }
+
+    @Operation(summary = "上传头像")
+    @PostMapping("/user/avatar")
+    public R<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("请选择要上传的图片");
+        }
+        try {
+            String avatarUrl = ossUtil.upload(file.getInputStream(), file.getOriginalFilename());
+            SysUser update = new SysUser();
+            update.setId(userId);
+            update.setAvatar(avatarUrl);
+            sysUserService.update(update);
+            return R.ok(avatarUrl);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BusinessException("头像上传失败：" + e.getMessage());
+        }
     }
 
     // ========== 地址簿 ==========
@@ -162,5 +209,26 @@ public class AppController {
             @RequestParam(defaultValue = "1") BigDecimal weight,
             @RequestParam(required = false) String goodsType) {
         return R.ok(appOrderService.estimateFreight(weight, goodsType));
+    }
+
+    // ========== 轨迹 ==========
+
+    @Operation(summary = "查询订单路线轨迹（不存在时自动生成）")
+    @GetMapping("/order/{id}/track")
+    public R<TrackRoute> getOrderTrack(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        // 校验订单归属
+        appOrderService.getOrderDetail(id, userId);
+        TrackRoute route = appTrackService.getOrCreate(id);
+        return R.ok(route);
+    }
+
+    @Operation(summary = "刷新订单路线轨迹（地址变更后重新规划）")
+    @PostMapping("/order/{id}/track/refresh")
+    public R<TrackRoute> refreshOrderTrack(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        appOrderService.getOrderDetail(id, userId);
+        TrackRoute route = appTrackService.refresh(id);
+        return R.ok(route);
     }
 }

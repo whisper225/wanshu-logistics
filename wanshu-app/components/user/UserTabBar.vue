@@ -16,16 +16,16 @@
 import { defineComponent } from '@vue/runtime-core'
 
 const TABS = [
-  { key: 'send',    label: '寄快递', icon: '📦', path: '/pages/user/send/index' },
+  { key: 'home',    label: '寄快递', icon: '✈', path: '/pages/user/home/index' },
   { key: 'track',   label: '查快递', icon: '🔍', path: '/pages/user/track/index' },
-  { key: 'profile', label: '我的',   icon: '👤', path: '/pages/user/profile/index' },
+  { key: 'profile', label: '我的',   icon: '☺', path: '/pages/user/profile/index' },
 ]
 
 export default defineComponent({
   name: 'UserTabBar',
   props: {
     current: {
-      type: String as () => 'send' | 'track' | 'profile',
+      type: String as () => 'home' | 'track' | 'profile',
       required: true,
     },
   },
@@ -77,8 +77,8 @@ export default defineComponent({
   }
 
   &.active {
-    .tab-icon { filter: none; }
-    .tab-label { color: #1890ff; font-weight: 600; }
+    .tab-icon { filter: none; opacity: 1; }
+    .tab-label { color: #e53935; font-weight: 600; }
   }
 }
 </style>

@@ -45,6 +45,10 @@ public class AppAddressBookService {
         if (book.getIsDefault() == null) {
             book.setIsDefault(0);
         }
+        // @TableLogic 列表条件为 deleted=0；插入时若未赋值可能为 NULL，导致列表查不出
+        if (book.getDeleted() == null) {
+            book.setDeleted(0);
+        }
         if (book.getIsDefault() == 1) {
             clearDefault(userId);
         }

@@ -3,6 +3,8 @@ import { request } from './request'
 export interface OrderItem {
   type: 'send' | 'receive'
   id: number
+  /** 收件列表：关联订单 ID，用于拉取订单详情 */
+  orderId?: number
   number: string
   status: number
   statusText: string
@@ -11,8 +13,11 @@ export interface OrderItem {
   receiverName: string
   receiverPhone: string
   goodsName: string
-  estimatedFee: number
-  actualFee: number
+  /** 寄件列表：估算运费 */
+  estimatedFee?: number
+  /** 收件列表：运费字段名与后端一致 */
+  freight?: number
+  actualFee?: number
   createdTime: string
 }
 

@@ -5,7 +5,6 @@ import com.wanshu.model.entity.base.BaseVehicle;
 import com.wanshu.web.dto.emp.BindVehicleRequest;
 import com.wanshu.web.dto.emp.DriverVO;
 import com.wanshu.web.service.emp.EmpDriverAdminService;
-import com.wanshu.web.service.emp.EmpDriverVehicleBindService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,25 +23,24 @@ import java.util.Map;
 public class EmpDriverController {
 
     private final EmpDriverAdminService driverAdminService;
-    private final EmpDriverVehicleBindService vehicleBindService;
 
     @Operation(summary = "司机已绑定车辆列表")
     @GetMapping("/bound-vehicles")
     public R<List<BaseVehicle>> boundVehicles(@RequestParam Long driverId) {
-        return R.ok(vehicleBindService.listBoundVehicles(driverId));
+        return R.ok(driverAdminService.listBoundVehicles(driverId));
     }
 
     @Operation(summary = "绑定车辆（需满足资料、排班、车辆状态等条件）")
     @PostMapping("/bind-vehicle")
     public R<Void> bindVehicle(@RequestBody BindVehicleRequest req) {
-        vehicleBindService.bind(req.getDriverId(), req.getVehicleId());
+        driverAdminService.bindVehicle(req.getDriverId(), req.getVehicleId());
         return R.ok();
     }
 
     @Operation(summary = "解绑车辆")
     @DeleteMapping("/unbind-vehicle")
     public R<Void> unbindVehicle(@RequestParam Long driverId, @RequestParam Long vehicleId) {
-        vehicleBindService.unbind(driverId, vehicleId);
+        driverAdminService.unbindVehicle(driverId, vehicleId);
         return R.ok();
     }
 

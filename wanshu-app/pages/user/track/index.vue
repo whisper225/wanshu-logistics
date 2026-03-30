@@ -8,7 +8,7 @@
         <input
           class="search-input"
           v-model="keyword"
-          placeholder="搜索运/订单号、姓名、电话"
+          placeholder="请输入快递单号"
           @confirm="onSearch"
           @input="onSearchInput"
         />
@@ -24,7 +24,7 @@
         :class="['tab-item', activeType === tab.type && 'active']"
         @click="switchTab(tab.type)"
       >
-        <text>{{ tab.label }}</text>
+        <text class="tab-label-text">{{ tab.label }} {{ tab.type === 0 ? sendCount : receiveCount }}</text>
         <view v-if="activeType === tab.type" class="tab-line" />
       </view>
     </view>
@@ -36,8 +36,11 @@
 
     <!-- 空状态 -->
     <view v-else-if="list.length === 0" class="empty">
-      <text class="empty-icon">📦</text>
-      <text class="empty-text">暂无{{ activeType === 0 ? '寄件' : '收件' }}记录</text>
+      <view class="empty-illus">
+        <view class="empty-folder" />
+        <view class="empty-folder-tab" />
+      </view>
+      <text class="empty-text">暂无数据</text>
       <button v-if="activeType === 0" class="empty-btn" @click="goSend">立即寄快递</button>
     </view>
 
@@ -74,20 +77,20 @@
 
         <view class="order-goods">
           <text class="goods-name">{{ item.goodsName || '未填写物品名称' }}</text>
-          <text v-if="item.estimatedFee" class="goods-fee">¥{{ item.estimatedFee }}</text>
+          <text v-if="feeText(item)" class="goods-fee">¥{{ feeText(item) }}</text>
         </view>
 
         <view class="order-footer">
           <text class="order-time">{{ formatTime(item.createdTime) }}</text>
           <view class="action-btns">
             <button
-              v-if="item.status === 0"
+              v-if="item.type === 'send' && item.status === 0"
               class="action-btn warn"
               size="mini"
               @click.stop="onCancel(item)"
             >取消寄件</button>
             <button
-              v-if="[5, 6, 7].includes(item.status)"
+              v-if="item.type === 'send' && [5, 6, 7].includes(item.status)"
               class="action-btn"
               size="mini"
               @click.stop="onDelete(item)"
@@ -250,12 +253,42 @@ export default defineComponent({
         { label: '寄件', type: 0 },
         { label: '收件', type: 1 },
       ],
+      sendCount: 0,
+      receiveCount: 0,
     }
+  },
+  onShow() {
+    this.loadTabCounts()
   },
   mounted() {
     this.switchTab(0)
   },
   methods: {
+    feeText(item: OrderItem): string | null {
+      if (item.type === 'receive') {
+        const f = item.freight
+        if (f == null) return null
+        const n = Number(f)
+        return Number.isNaN(n) ? null : n.toFixed(2)
+      }
+      const e = item.estimatedFee
+      if (e == null) return null
+      const n = Number(e)
+      return Number.isNaN(n) ? null : n.toFixed(2)
+    },
+    async loadTabCounts() {
+      try {
+        const [r0, r1] = await Promise.all([
+          listOrders({ type: 0, pageNum: 1, pageSize: 500 }),
+          listOrders({ type: 1, pageNum: 1, pageSize: 500 }),
+        ])
+        this.sendCount = r0.total ?? r0.list.length
+        this.receiveCount = r1.total ?? r1.list.length
+      } catch (_) {
+        this.sendCount = 0
+        this.receiveCount = 0
+      }
+    },
     async loadList() {
       this.loading = true
       try {
@@ -264,6 +297,7 @@ export default defineComponent({
           type: this.activeType,
         })
         this.list = res.list
+        await this.loadTabCounts()
       } catch (e: unknown) {
         const err = e as { message?: string }
         uni.showToast({ title: err.message || '加载失败', icon: 'none' })
@@ -287,15 +321,25 @@ export default defineComponent({
       this.keyword = ''
       this.loadList()
     },
+    orderIdForItem(item: OrderItem): number {
+      if (item.type === 'receive' && item.orderId != null) {
+        return item.orderId
+      }
+      return item.id
+    },
     async goDetail(item: OrderItem) {
       this.currentItem = item
       this.orderDetail = null
       this.waybillInfo = null
       this.showDetail = true
+      const oid = this.orderIdForItem(item)
       try {
-        this.orderDetail = await getOrderDetail(item.id)
-        if ([2, 3, 4, 5, 6].includes(item.status)) {
-          this.waybillInfo = await getOrderWaybill(item.id)
+        this.orderDetail = await getOrderDetail(oid)
+        if (item.type === 'send' && [2, 3, 4, 5, 6].includes(item.status)) {
+          this.waybillInfo = await getOrderWaybill(oid)
+        }
+        if (item.type === 'receive') {
+          this.waybillInfo = await getOrderWaybill(oid)
         }
       } catch (_) {}
     },
@@ -362,6 +406,8 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+$tab-red: #e53935;
+
 .page-wrap {
   min-height: 100vh;
   background: #f5f5f5;
@@ -413,13 +459,18 @@ export default defineComponent({
   flex: 1;
   text-align: center;
   padding: 24rpx 0 20rpx;
-  font-size: 28rpx;
-  color: #666;
   position: relative;
   &.active {
-    color: #1890ff;
-    font-weight: 600;
+    .tab-label-text {
+      color: #1a1a1a;
+      font-weight: 700;
+    }
   }
+}
+
+.tab-label-text {
+  font-size: 28rpx;
+  color: #999;
 }
 
 .tab-line {
@@ -427,10 +478,10 @@ export default defineComponent({
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 40rpx;
-  height: 4rpx;
-  background: #1890ff;
-  border-radius: 2rpx;
+  width: 48rpx;
+  height: 6rpx;
+  background: $tab-red;
+  border-radius: 3rpx;
 }
 
 .center-tip {
@@ -444,22 +495,47 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 120rpx 40rpx;
+  padding: 100rpx 40rpx;
 }
 
-.empty-icon {
-  font-size: 80rpx;
-  margin-bottom: 24rpx;
+.empty-illus {
+  position: relative;
+  width: 200rpx;
+  height: 180rpx;
+  margin-bottom: 32rpx;
+}
+
+.empty-folder {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -45%);
+  width: 140rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
+  background: #ececec;
+  border: 3rpx solid #ddd;
+}
+
+.empty-folder-tab {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  width: 56rpx;
+  height: 18rpx;
+  border-radius: 6rpx 6rpx 0 0;
+  background: $tab-red;
 }
 
 .empty-text {
   font-size: 28rpx;
-  color: #bbb;
+  color: #999;
   margin-bottom: 32rpx;
 }
 
 .empty-btn {
-  background: #1890ff;
+  background: $tab-red;
   color: #fff;
   border-radius: 48rpx;
   font-size: 28rpx;

@@ -12,9 +12,17 @@
       "root": "pages/user",
       "pages": [
         {
-          "path": "send/index",
+          "path": "home/index",
           "style": {
             "navigationBarTitleText": "寄快递",
+            "navigationBarBackgroundColor": "#FFFFFF",
+            "navigationBarTextStyle": "black"
+          }
+        },
+        {
+          "path": "send/index",
+          "style": {
+            "navigationBarTitleText": "填写寄件信息",
             "navigationBarBackgroundColor": "#FFFFFF",
             "navigationBarTextStyle": "black"
           }

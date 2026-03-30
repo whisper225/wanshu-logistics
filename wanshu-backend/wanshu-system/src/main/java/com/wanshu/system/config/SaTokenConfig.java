@@ -25,6 +25,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
                         "/api/auth/sms/send",
                         "/api/auth/sms/login",
                         "/api/auth/wx/login",
+                        "/api/open/**",
                         "/doc.html",
                         "/webjars/**",
                         "/v3/api-docs/**"

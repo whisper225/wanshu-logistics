@@ -64,7 +64,7 @@ const ROLE_TABS = [
     label: '用户端',
     title: '寄快递 · 查快递',
     desc: '下单寄件、实时跟踪运单状态、管理地址簿',
-    home: '/pages/user/send/index',
+    home: '/pages/user/home/index',
   },
   {
     role: 'courier' as UserRole,

@@ -24,6 +24,9 @@ public class CozeConfig {
     /** 调度辅助 Bot ID */
     private String dispatchBotId;
 
+    /** 路径规划工作流 ID（轨迹生成：高德路线 → polyline） */
+    private String routeWorkflowId;
+
     /** 请求超时时间（秒） */
     private Integer timeout = 60;
 }

@@ -112,7 +112,7 @@
 <script lang="ts">
 import { defineComponent } from '@vue/runtime-core'
 import UserTabBar from '@/components/user/UserTabBar.vue'
-import { getUserInfo } from '@/api/user'
+import { getUserInfo, updateUserInfo } from '@/api/user'
 import type { UserInfo } from '@/api/user'
 import { logout } from '@/api/auth'
 
@@ -155,6 +155,7 @@ export default defineComponent({
       try {
         this.userInfo = await getUserInfo()
         this.infoForm.gender = this.userInfo.gender ?? 0
+        this.infoForm.birthday = this.userInfo.birthday || ''
       } catch (_) {}
     },
     onBirthdayChange(e: { detail: { value: string } }) {
@@ -170,8 +171,21 @@ export default defineComponent({
       this.showInfoEdit = false
     },
     async onSaveInfo() {
-      uni.showToast({ title: '保存成功', icon: 'success' })
-      this.showInfoEdit = false
+      this.savingInfo = true
+      try {
+        await updateUserInfo({
+          gender: this.infoForm.gender,
+          birthday: this.infoForm.birthday || undefined,
+        })
+        await this.loadUserInfo()
+        uni.showToast({ title: '保存成功', icon: 'success' })
+        this.showInfoEdit = false
+      } catch (e: unknown) {
+        const err = e as { message?: string }
+        uni.showToast({ title: err.message || '保存失败', icon: 'none' })
+      } finally {
+        this.savingInfo = false
+      }
     },
     goAddress() {
       uni.navigateTo({ url: '/pages/user/address/index' })
@@ -211,7 +225,7 @@ export default defineComponent({
 }
 
 .header-card {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
   padding: 60rpx 32rpx 40rpx;
   display: flex;
   align-items: center;
@@ -383,8 +397,8 @@ export default defineComponent({
   color: #666;
   background: #f5f5f5;
   &.active {
-    background: #e6f4ff;
-    color: #1890ff;
+    background: #ffebee;
+    color: #e53935;
     font-weight: 600;
   }
 }
@@ -419,7 +433,7 @@ export default defineComponent({
 }
 
 .form-submit {
-  background: #1890ff;
+  background: #e53935;
   color: #fff;
 }
 </style>

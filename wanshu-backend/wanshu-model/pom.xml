@@ -36,6 +36,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- MongoDB 文档注解（TrackRoute 等）；须参与编译，避免 IDE 未解析 optional 导致整模块类加载异常 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

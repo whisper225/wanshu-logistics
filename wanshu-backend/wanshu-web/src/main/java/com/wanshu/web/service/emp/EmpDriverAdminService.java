@@ -2,16 +2,19 @@ package com.wanshu.web.service.emp;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wanshu.base.mapper.BaseOrganMapper;
+import com.wanshu.base.service.BaseVehicleService;
 import com.wanshu.base.service.EmpDriverService;
 import com.wanshu.common.exception.BusinessException;
 import com.wanshu.common.result.ResultCode;
 import com.wanshu.model.entity.base.BaseOrgan;
+import com.wanshu.model.entity.base.BaseVehicle;
 import com.wanshu.model.entity.emp.EmpDriver;
 import com.wanshu.model.entity.sys.SysUser;
 import com.wanshu.system.service.SysUserService;
 import com.wanshu.web.dto.emp.DriverVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -29,7 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 司机管理端仅查询列表与详情；车辆绑定见 {@link EmpDriverVehicleBindService}。
+ * 司机管理端：列表、详情，以及车辆绑定校验（bind/unbind）。
  * <p>
  * 列表以「拥有司机角色」的 {@link SysUser} 为准（与 init-admin-data 中 role_id=3 一致），
  * 再合并 {@link EmpDriver} 扩展信息；仅有用户表、尚未写入 emp_driver 的司机也会出现在列表中，
@@ -47,6 +50,76 @@ public class EmpDriverAdminService {
     private final EmpDriverService driverService;
     private final SysUserService userService;
     private final BaseOrganMapper baseOrganMapper;
+    private final BaseVehicleService vehicleService;
+
+    // ───────────── 车辆绑定（原 EmpDriverVehicleBindService，合并至此避免类加载问题） ─────────────
+
+    public List<BaseVehicle> listBoundVehicles(Long driverId) {
+        ensureDriverExists(driverId);
+        List<Long> ids = vehicleService.getVehicleIdsByDriverId(driverId);
+        List<BaseVehicle> list = new ArrayList<>();
+        for (Long vid : ids) {
+            BaseVehicle v = vehicleService.findVehicleById(vid);
+            if (v != null) {
+                list.add(v);
+            }
+        }
+        return list;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void bindVehicle(Long driverId, Long vehicleId) {
+        EmpDriver driver = ensureDriverExists(driverId);
+        SysUser user = userService.getById(driverId);
+        assertProfileComplete(user, driver);
+        assertScheduleOk(driver);
+
+        BaseVehicle vehicle = vehicleService.getVehicleById(vehicleId);
+        assertVehicleEligibleForBind(vehicle);
+
+        vehicleService.bindDriver(vehicleId, driverId);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void unbindVehicle(Long driverId, Long vehicleId) {
+        ensureDriverExists(driverId);
+        vehicleService.unbindDriver(vehicleId, driverId);
+    }
+
+    private EmpDriver ensureDriverExists(Long driverId) {
+        EmpDriver d = driverService.getById(driverId);
+        if (d == null) {
+            throw new BusinessException("司机不存在");
+        }
+        return d;
+    }
+
+    private void assertProfileComplete(SysUser user, EmpDriver driver) {
+        if (!StringUtils.hasText(user.getRealName()) || !StringUtils.hasText(user.getPhone())) {
+            throw new BusinessException("司机信息未完善：请先填写姓名与手机号");
+        }
+        if (user.getOrganId() == null) {
+            throw new BusinessException("司机信息未完善：请先设置所属机构");
+        }
+        if (!StringUtils.hasText(driver.getVehicleTypes())) {
+            throw new BusinessException("司机信息未完善：请先填写擅长车型");
+        }
+        if (!StringUtils.hasText(driver.getLicenseImage())) {
+            throw new BusinessException("司机信息未完善：请先上传驾驶证照片");
+        }
+    }
+
+    private void assertScheduleOk(EmpDriver driver) {
+        if (driver.getWorkStatus() == null || driver.getWorkStatus() != 1) {
+            throw new BusinessException("司机未处于上班状态，无法分配车辆（请先完成排班/设为上班）");
+        }
+    }
+
+    private void assertVehicleEligibleForBind(BaseVehicle vehicle) {
+        if (vehicle.getStatus() != null && vehicle.getStatus() == 1) {
+            throw new BusinessException("该车辆为可用/启用状态，不可在此绑定；请选择停用状态的车辆");
+        }
+    }
 
     public Map<String, Object> page(int pageNum, int pageSize, Long organId, Integer workStatus, String keyword) {
         List<Long> roleDriverIds = userService.findUserIdsByRoleId(ROLE_DRIVER_ID);

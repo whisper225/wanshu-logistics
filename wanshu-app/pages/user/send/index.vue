@@ -189,8 +189,6 @@
       </view>
     </view>
 
-    <UserTabBar current="send" />
-
     <!-- 禁寄物品弹窗 -->
     <view v-if="showForbidden" class="overlay" @click.self="showForbidden = false">
       <view class="forbidden-panel">
@@ -212,7 +210,6 @@
 
 <script lang="ts">
 import { defineComponent } from '@vue/runtime-core'
-import UserTabBar from '@/components/user/UserTabBar.vue'
 import { listAddress } from '@/api/user'
 import type { AddressBook } from '@/api/user'
 import { createOrder, estimateFreight } from '@/api/order'
@@ -227,7 +224,6 @@ const FORBIDDEN_ITEMS = [
 
 export default defineComponent({
   name: 'SendPage',
-  components: { UserTabBar },
   data() {
     return {
       form: {
@@ -377,7 +373,7 @@ export default defineComponent({
 }
 
 .page {
-  padding-bottom: 280rpx;
+  padding-bottom: 160rpx;
   background: #f5f5f5;
 }
 
@@ -413,7 +409,7 @@ export default defineComponent({
   height: 16rpx;
   border-radius: 50%;
   display: block;
-  &.sender { background: #1890ff; }
+  &.sender { background: #e53935; }
   &.receiver { background: #52c41a; }
 }
 
@@ -466,7 +462,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 8rpx;
-  color: #1890ff;
+  color: #e53935;
   font-size: 26rpx;
   margin-top: 16rpx;
   .icon { font-size: 28rpx; }
@@ -497,8 +493,8 @@ export default defineComponent({
   background: #f5f5f5;
   color: #666;
   &.active {
-    background: #e6f4ff;
-    color: #1890ff;
+    background: #ffebee;
+    color: #e53935;
     font-weight: 600;
   }
 }
@@ -516,8 +512,8 @@ export default defineComponent({
   background: #f5f5f5;
   color: #666;
   &.active {
-    background: #e6f4ff;
-    color: #1890ff;
+    background: #ffebee;
+    color: #e53935;
     font-weight: 600;
   }
 }
@@ -543,8 +539,8 @@ export default defineComponent({
   border-radius: 50%;
   border: 2rpx solid #d9d9d9;
   &.radio-active {
-    border-color: #1890ff;
-    background: #1890ff;
+    border-color: #e53935;
+    background: #e53935;
     position: relative;
     &::after {
       content: '';
@@ -614,7 +610,7 @@ export default defineComponent({
 }
 
 .submit-btn {
-  background: #1890ff;
+  background: #e53935;
   color: #fff;
   border-radius: 48rpx;
   font-size: 30rpx;
@@ -695,8 +691,8 @@ export default defineComponent({
 
 .default-tag {
   font-size: 22rpx;
-  color: #1890ff;
-  border: 1rpx solid #1890ff;
+  color: #e53935;
+  border: 1rpx solid #e53935;
   padding: 2rpx 8rpx;
   border-radius: 4rpx;
 }
@@ -709,7 +705,7 @@ export default defineComponent({
 .picker-add {
   text-align: center;
   padding: 32rpx;
-  color: #1890ff;
+  color: #e53935;
   font-size: 28rpx;
 }
 

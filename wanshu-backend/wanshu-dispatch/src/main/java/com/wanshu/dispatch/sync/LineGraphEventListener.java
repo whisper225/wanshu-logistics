@@ -1,7 +1,7 @@
 package com.wanshu.dispatch.sync;
 
 import com.wanshu.common.event.LineGraphDeleteEvent;
-import com.wanshu.common.event.LineGraphUpsertEvent;
+import com.wanshu.dispatch.event.LineGraphUpsertEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

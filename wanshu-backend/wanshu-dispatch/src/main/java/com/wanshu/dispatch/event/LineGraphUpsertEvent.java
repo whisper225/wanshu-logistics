@@ -1,4 +1,4 @@
-package com.wanshu.common.event;
+package com.wanshu.dispatch.event;
 
 import com.wanshu.model.entity.base.BaseOrgan;
 import com.wanshu.model.entity.dispatch.DispatchLine;

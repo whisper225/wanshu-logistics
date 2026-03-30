@@ -1,0 +1,33 @@
+# 团队克隆仓库后：复制本文件为 application-local.yml，再按本机填写明文（该文件已 gitignore）
+# 仓库内可保留一份示例结构，但不要提交真实密钥。
+#
+# 亦可不设此文件，仅用环境变量（与 application.yml 中 ${VAR:} 对应）。
+
+spring:
+  datasource:
+    username: root
+    password: 请填写本地 MySQL 密码
+  data:
+    redis:
+      password: 请填写本地 Redis 密码（无密码可留空或删行）
+    mongodb:
+      uri: mongodb://localhost:27017/wanshu_logistics
+      # 带认证示例：mongodb://用户:密码@localhost:27017/wanshu_logistics?authSource=admin
+  neo4j:
+    authentication:
+      username: neo4j
+      password: 请填写 Neo4j 密码
+
+wanshu:
+  wx:
+    app-secret: 请填写微信小程序 AppSecret
+  open:
+    api-key: 请填写与 Coze HTTP 节点一致的密钥
+
+amap:
+  rest:
+    key: 请填写高德 Web 服务 Key
+
+coze:
+  access-token: 请填写扣子 PAT
+  customer-bot-id: 请填写 Bot ID
