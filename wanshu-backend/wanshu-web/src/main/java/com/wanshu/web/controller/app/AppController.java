@@ -9,10 +9,12 @@ import com.wanshu.model.entity.app.AppAddressBook;
 import com.wanshu.model.entity.biz.BizOrder;
 import com.wanshu.model.entity.biz.BizWaybill;
 import com.wanshu.model.entity.sys.SysUser;
+import com.wanshu.model.entity.track.TrackNode;
 import com.wanshu.model.entity.track.TrackRoute;
 import com.wanshu.system.service.SysUserService;
 import com.wanshu.web.service.app.AppOrderService;
 import com.wanshu.web.service.app.AppTrackService;
+import com.wanshu.web.service.app.TrackNodeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class AppController {
     private final AppAddressBookService addressBookService;
     private final AppOrderService appOrderService;
     private final AppTrackService appTrackService;
+    private final TrackNodeService trackNodeService;
     private final SysUserService sysUserService;
     private final OssUtil ossUtil;
 
@@ -230,5 +233,16 @@ public class AppController {
         appOrderService.getOrderDetail(id, userId);
         TrackRoute route = appTrackService.refresh(id);
         return R.ok(route);
+    }
+
+    @Operation(summary = "查询订单物流跟踪节点（时间线）")
+    @GetMapping("/order/{id}/tracking-nodes")
+    public R<List<TrackNode>> getTrackingNodes(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        BizWaybill waybill = appOrderService.getWaybillByOrder(id, userId);
+        if (waybill == null) {
+            return R.ok(List.of());
+        }
+        return R.ok(trackNodeService.listByWaybillId(waybill.getId()));
     }
 }

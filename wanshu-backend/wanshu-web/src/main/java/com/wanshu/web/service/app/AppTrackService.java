@@ -1,6 +1,5 @@
 package com.wanshu.web.service.app;
 
-import com.wanshu.common.exception.BusinessException;
 import com.wanshu.model.entity.biz.BizOrder;
 import com.wanshu.model.entity.track.TrackRoute;
 import com.wanshu.web.repository.TrackRouteRepository;
@@ -124,11 +123,13 @@ public class AppTrackService {
     }
 
     /**
-     * 构建坐标字符串：address 有真实坐标时使用，否则返回默认值。
-     * 生产环境此处应调用高德地理编码 API。
+     * 构建坐标字符串。若 address 本身是 "lng,lat" 格式则直接使用，否则返回 fallback 默认坐标。
+     * TODO: 生产环境应接入高德地理编码 /v3/geocode/geo 将中文地址转为 lng,lat
      */
     private String buildCoord(String address, String fallback) {
-        // TODO: 接入高德地理编码 /v3/geocode/geo 将 address 转为 lng,lat
-        return StringUtils.hasText(address) ? fallback : fallback;
+        if (StringUtils.hasText(address) && address.matches("^\\d+\\.\\d+,\\d+\\.\\d+$")) {
+            return address;
+        }
+        return fallback;
     }
 }

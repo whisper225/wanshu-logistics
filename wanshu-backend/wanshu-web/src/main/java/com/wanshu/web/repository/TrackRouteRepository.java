@@ -11,6 +11,8 @@ public interface TrackRouteRepository extends MongoRepository<TrackRoute, String
 
     Optional<TrackRoute> findByOrderId(Long orderId);
 
+    Optional<TrackRoute> findByWaybillId(Long waybillId);
+
     boolean existsByOrderId(Long orderId);
 
     void deleteByOrderId(Long orderId);

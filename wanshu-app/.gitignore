@@ -1,7 +1,0 @@
-node_modules
-dist
-unpackage
-.tsbuild
-.hbuilderx
-*.local
-.DS_Store

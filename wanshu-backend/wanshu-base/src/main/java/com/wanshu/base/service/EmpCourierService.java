@@ -57,6 +57,15 @@ public class EmpCourierService {
         return courierMapper.selectList(new LambdaQueryWrapper<EmpCourier>().in(EmpCourier::getId, userIds));
     }
 
+    /** 按机构 ID 查询快递员列表 */
+    public List<EmpCourier> listByOrganId(Long organId) {
+        if (organId == null) {
+            return List.of();
+        }
+        return courierMapper.selectList(
+                new LambdaQueryWrapper<EmpCourier>().eq(EmpCourier::getOrganId, organId));
+    }
+
     @Transactional
     public void create(EmpCourier courier) {
         courierMapper.insert(courier);

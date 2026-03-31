@@ -1,6 +1,7 @@
 package com.wanshu.model.entity.biz;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.wanshu.model.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -36,6 +37,7 @@ public class BizOrder extends BaseEntity {
     private Integer paymentMethod;
     private BigDecimal estimatedFee;
     private BigDecimal actualFee;
+    @JsonFormat(pattern = "yyyy-M-d H:mm:ss")
     private LocalDateTime pickupTime;
     private Integer privacyFlag;
     private Integer status;

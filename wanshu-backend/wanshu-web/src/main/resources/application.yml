@@ -36,6 +36,29 @@ spring:
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
     virtual-host: /
+    # 连接超时（ms）
+    connection-timeout: 5000
+    # 断线自动恢复
+    listener:
+      simple:
+        # 队列不存在时不直接报致命错误，等待 Broker 恢复后重建
+        missing-queues-fatal: false
+        # 消费者数量
+        concurrency: 1
+        max-concurrency: 5
+        # 消费失败后的重试策略
+        retry:
+          enabled: true
+          initial-interval: 3000   # 首次重试等待 3 秒
+          max-attempts: 3          # 最多重试 3 次
+          multiplier: 2.0          # 每次等待时间翻倍（3s → 6s → 12s）
+          max-interval: 30000      # 最长等待 30 秒
+    # TCP 连接断开后自动重连
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss

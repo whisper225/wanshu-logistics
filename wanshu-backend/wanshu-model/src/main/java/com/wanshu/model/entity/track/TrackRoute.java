@@ -25,6 +25,19 @@ public class TrackRoute {
     @Indexed(unique = true)
     private Long orderId;
 
+    /** 关联的运单 ID */
+    @Indexed
+    private Long waybillId;
+
+    /** 轨迹状态：0=进行中，1=已完成 */
+    private Integer status;
+
+    /** 当前实时位置（快递员/司机最新上报） */
+    private GeoPoint currentLocation;
+
+    /** 最后一次位置上报时间 */
+    private LocalDateTime lastLocationTime;
+
     /** 起点地址（寄件地址，人类可读） */
     private String originAddress;
 

@@ -31,6 +31,11 @@
             <groupId>com.wanshu</groupId>
             <artifactId>wanshu-dispatch</artifactId>
         </dependency>
+        <!-- 本模块大量直接使用实体类，显式依赖避免 IDE 仅解析传递依赖时出现「程序包不存在」 -->
+        <dependency>
+            <groupId>com.wanshu</groupId>
+            <artifactId>wanshu-model</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -47,6 +52,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

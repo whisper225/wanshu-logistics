@@ -141,11 +141,20 @@ public class AppOrderService {
         return waybillMapper.selectOne(wrapper);
     }
 
+    /**
+     * 用户下单：创建订单并自动生成一条待分配的揽收任务。
+     */
     @Transactional
     public BizOrder createOrder(BizOrder order, Long userId) {
         order.setUserId(userId);
         order.setSource(1);
         orderService.create(order);
+
+        // 广播新揽收任务给所有在线快递员
+        com.wanshu.web.websocket.WebSocketNotifyServer.broadcast(
+                String.format("{\"type\":\"new_pickup_task\",\"orderId\":\"%s\",\"message\":\"有新的揽收任务，请及时抢单\"}",
+                        order.getId()));
+
         return orderMapper.selectById(order.getId());
     }
 

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wanshu.common.exception.BusinessException;
 import com.wanshu.common.result.ResultCode;
 import com.wanshu.model.entity.biz.BizOrder;
+import com.wanshu.model.entity.biz.BizPickupTask;
 import com.wanshu.business.mapper.BizOrderMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 public class BizOrderService {
 
     private final BizOrderMapper orderMapper;
+    private final BizTaskService taskService;
 
     public IPage<BizOrder> page(int pageNum, int pageSize, String keyword, Integer status) {
         LambdaQueryWrapper<BizOrder> wrapper = new LambdaQueryWrapper<>();
@@ -52,6 +54,12 @@ public class BizOrderService {
             order.setStatus(0);
         }
         orderMapper.insert(order);
+
+        // 任意入口新建订单均生成待分配揽收任务（管理端 / App 共用）
+        BizPickupTask pickupTask = new BizPickupTask();
+        pickupTask.setOrderId(order.getId());
+        pickupTask.setStatus(0);
+        taskService.createPickupTask(pickupTask);
     }
 
     @Transactional
