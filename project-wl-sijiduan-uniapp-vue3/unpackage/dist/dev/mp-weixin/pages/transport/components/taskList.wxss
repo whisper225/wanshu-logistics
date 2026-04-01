@@ -1,0 +1,97 @@
+.task-list.data-v-84c8a036 {
+  padding: 0 28rpx;
+}
+.empty-box.data-v-84c8a036 {
+  padding: 200rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+.task-card.data-v-84c8a036 {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx;
+  margin-top: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+.card-header.data-v-84c8a036 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.task-number.data-v-84c8a036 {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #151515;
+}
+.status-tag.data-v-84c8a036 {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  background: #f0f0f0;
+  color: #666;
+}
+.status-0.data-v-84c8a036 {
+  background: #fff7e6;
+  color: #fa8c16;
+}
+.status-1.data-v-84c8a036 {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+.status-2.data-v-84c8a036 {
+  background: #f6ffed;
+  color: #52c41a;
+}
+.card-body.data-v-84c8a036 {
+  padding: 20rpx 0;
+}
+.route-info.data-v-84c8a036 {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  margin-bottom: 12rpx;
+}
+.route-point.data-v-84c8a036 {
+  display: flex;
+  align-items: center;
+}
+.dot.data-v-84c8a036 {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: 12rpx;
+}
+.start-dot.data-v-84c8a036 {
+  background: #52c41a;
+}
+.end-dot.data-v-84c8a036 {
+  background: #E94739;
+}
+.route-text.data-v-84c8a036 {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+.route-arrow.data-v-84c8a036 {
+  margin: 0 24rpx;
+  color: #ccc;
+  font-size: 32rpx;
+}
+.info-row.data-v-84c8a036 {
+  display: flex;
+  padding: 8rpx 0;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+.label.data-v-84c8a036 {
+  color: #999;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+.value.data-v-84c8a036 {
+  color: #333;
+  flex: 1;
+}

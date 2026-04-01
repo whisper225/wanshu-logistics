@@ -1,0 +1,45 @@
+{
+  "pages": [
+    "pages/transport/index",
+    "pages/my/index",
+    "pages/login/index"
+  ],
+  "subPackages": [
+    {
+      "root": "subPages",
+      "pages": [
+        "transport-detail/index",
+        "return-register/index"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "司机工作台",
+    "backgroundColor": "#F8F8F8",
+    "onReachBottomDistance": 50,
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "borderStyle": "black",
+    "color": "#000000",
+    "selectedColor": "#E94739",
+    "list": [
+      {
+        "pagePath": "pages/transport/index",
+        "text": "运输",
+        "iconPath": "static/transport.png",
+        "selectedIconPath": "static/transportActive.png"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的",
+        "iconPath": "static/wode.png",
+        "selectedIconPath": "static/wodeActive.png"
+      }
+    ]
+  },
+  "usingComponents": {
+    "nav-bar": "/components/Navbar/index"
+  }
+}

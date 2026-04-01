@@ -1,0 +1,98 @@
+.detail-page.data-v-c9fcc13c {
+  min-height: 100vh;
+  background: #f3f5f9;
+  padding-bottom: 160rpx;
+}
+.content.data-v-c9fcc13c {
+  padding: 20rpx 28rpx;
+}
+.status-bar.data-v-c9fcc13c {
+  background: var(--essential-color-red);
+  padding: 24rpx 32rpx;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+}
+.status-bar .status-text.data-v-c9fcc13c {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+.card.data-v-c9fcc13c {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx;
+  margin-bottom: 20rpx;
+}
+.card-title.data-v-c9fcc13c {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #151515;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  margin-bottom: 16rpx;
+}
+.info-row.data-v-c9fcc13c {
+  display: flex;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+.label.data-v-c9fcc13c {
+  color: #999;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+.value.data-v-c9fcc13c {
+  color: #333;
+  flex: 1;
+}
+.link.data-v-c9fcc13c {
+  color: #1890ff;
+}
+.remark-input.data-v-c9fcc13c {
+  width: 100%;
+  height: 200rpx;
+  font-size: 26rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+  background: #f9f9f9;
+  border-radius: 12rpx;
+}
+.footer.data-v-c9fcc13c {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 48rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+.btn-group.data-v-c9fcc13c {
+  display: flex;
+  gap: 24rpx;
+}
+.btn-sign.data-v-c9fcc13c, .btn-reject-confirm.data-v-c9fcc13c {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: var(--essential-color-red);
+  color: #fff;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  text-align: center;
+}
+.btn-reject.data-v-c9fcc13c, .btn-cancel.data-v-c9fcc13c {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #fff;
+  color: #333;
+  border: 2rpx solid #ddd;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  text-align: center;
+}
+.btn-reject-confirm.data-v-c9fcc13c {
+  background: #ff4d4f;
+}

@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "揽收详情",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "nav-bar": "../../components/Navbar/index"
+  }
+}

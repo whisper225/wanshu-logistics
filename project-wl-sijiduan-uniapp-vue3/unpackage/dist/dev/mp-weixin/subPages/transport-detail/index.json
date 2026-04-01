@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "运输详情",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "nav-bar": "../../components/Navbar/index"
+  }
+}

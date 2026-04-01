@@ -1,0 +1,72 @@
+.task-list.data-v-a14ad68a {
+  padding: 0 28rpx;
+}
+.empty-box.data-v-a14ad68a {
+  padding: 200rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+.task-card.data-v-a14ad68a {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx;
+  margin-top: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+.card-header.data-v-a14ad68a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.task-number.data-v-a14ad68a {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #151515;
+}
+.status-tag.data-v-a14ad68a {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  background: #f0f0f0;
+  color: #666;
+}
+.status-1.data-v-a14ad68a {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+.status-2.data-v-a14ad68a {
+  background: #f6ffed;
+  color: #52c41a;
+}
+.status-3.data-v-a14ad68a {
+  background: #fff2f0;
+  color: #ff4d4f;
+}
+.card-body.data-v-a14ad68a {
+  padding: 20rpx 0;
+}
+.info-row.data-v-a14ad68a {
+  display: flex;
+  padding: 8rpx 0;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+.label.data-v-a14ad68a {
+  color: #999;
+  width: 120rpx;
+  flex-shrink: 0;
+}
+.value.data-v-a14ad68a {
+  color: #333;
+  flex: 1;
+}
+.card-footer.data-v-a14ad68a {
+  padding-top: 16rpx;
+}
+.card-footer .time.data-v-a14ad68a {
+  font-size: 24rpx;
+  color: #bbb;
+}

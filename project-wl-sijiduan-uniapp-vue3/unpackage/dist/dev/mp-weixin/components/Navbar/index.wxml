@@ -1,0 +1,1 @@
+<view class="NavBar data-v-e4fdf528" style="{{'height:' + f}}"><view class="title data-v-e4fdf528" style="{{'padding-top:' + d + ';' + ('height:' + e)}}">{{a}} <image src="{{b}}" bindtap="{{c}}" class="navbar-image data-v-e4fdf528"></image></view></view>

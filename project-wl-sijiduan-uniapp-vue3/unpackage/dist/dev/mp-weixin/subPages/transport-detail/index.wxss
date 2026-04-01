@@ -1,0 +1,121 @@
+.detail-page.data-v-d3be48ed {
+  min-height: 100vh;
+  background: #f3f5f9;
+  padding-bottom: 160rpx;
+}
+.content.data-v-d3be48ed {
+  padding: 20rpx 28rpx;
+}
+.status-bar.data-v-d3be48ed {
+  background: var(--essential-color-red);
+  padding: 24rpx 32rpx;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+}
+.status-bar .status-text.data-v-d3be48ed {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+.status-bg-0.data-v-d3be48ed {
+  background: #fa8c16;
+}
+.status-bg-1.data-v-d3be48ed {
+  background: #1890ff;
+}
+.status-bg-2.data-v-d3be48ed {
+  background: #52c41a;
+}
+.card.data-v-d3be48ed {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx;
+  margin-bottom: 20rpx;
+}
+.card-title.data-v-d3be48ed {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #151515;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  margin-bottom: 16rpx;
+}
+.info-row.data-v-d3be48ed {
+  display: flex;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+.label.data-v-d3be48ed {
+  color: #999;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+.value.data-v-d3be48ed {
+  color: #333;
+  flex: 1;
+}
+.waybill-item.data-v-d3be48ed {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.waybill-item.data-v-d3be48ed:last-child {
+  border-bottom: none;
+}
+.wb-header.data-v-d3be48ed {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+.wb-number.data-v-d3be48ed {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+}
+.wb-status.data-v-d3be48ed {
+  font-size: 24rpx;
+  color: #999;
+}
+.wb-row.data-v-d3be48ed {
+  display: flex;
+  padding: 4rpx 0;
+  font-size: 24rpx;
+}
+.wb-label.data-v-d3be48ed {
+  color: #999;
+  width: 60rpx;
+  flex-shrink: 0;
+}
+.wb-value.data-v-d3be48ed {
+  color: #666;
+  flex: 1;
+}
+.footer.data-v-d3be48ed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 48rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+.btn-primary.data-v-d3be48ed {
+  height: 88rpx;
+  line-height: 88rpx;
+  background: var(--essential-color-red);
+  color: #fff;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  text-align: center;
+}
+.btn-secondary.data-v-d3be48ed {
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #fff;
+  color: #333;
+  border: 2rpx solid #ddd;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  text-align: center;
+}

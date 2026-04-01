@@ -1,0 +1,28 @@
+.loginBox.data-v-d08ef7d4 {
+  min-height: 100vh;
+  background: #fff;
+}
+.logo-box.data-v-d08ef7d4 {
+  padding: 120rpx 0 60rpx;
+  text-align: center;
+}
+.logo-box .logo-text.data-v-d08ef7d4 {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: var(--neutral-color-main);
+}
+.wx-btn.data-v-d08ef7d4 {
+  margin: 40rpx 48rpx 0;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #07c160;
+  color: #fff;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+}
+.tips-text.data-v-d08ef7d4 {
+  margin: 32rpx 48rpx;
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+}

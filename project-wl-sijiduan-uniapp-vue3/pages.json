@@ -1,0 +1,76 @@
+{
+    "pages": [
+        {
+            "path": "pages/transport/index",
+            "style": {
+                "enablePullDownRefresh": true,
+                "navigationBarTitleText": "运输任务",
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/my/index",
+            "style": {
+                "navigationBarTitleText": "我的",
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/login/index",
+            "style": {
+                "enablePullDownRefresh": false,
+                "navigationBarTitleText": "登录",
+                "navigationStyle": "custom"
+            }
+        }
+    ],
+    "subPackages": [
+        {
+            "root": "subPages",
+            "pages": [
+                {
+                    "path": "transport-detail/index",
+                    "style": {
+                        "navigationStyle": "custom",
+                        "navigationBarTitleText": "运输详情",
+                        "enablePullDownRefresh": false
+                    }
+                },
+                {
+                    "path": "return-register/index",
+                    "style": {
+                        "navigationStyle": "custom",
+                        "navigationBarTitleText": "回车登记",
+                        "enablePullDownRefresh": false
+                    }
+                }
+            ]
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "司机工作台",
+        "backgroundColor": "#F8F8F8",
+        "onReachBottomDistance": 50,
+        "enablePullDownRefresh": true
+    },
+    "tabBar": {
+        "borderStyle": "black",
+        "color": "#000000",
+        "selectedColor": "#E94739",
+        "list": [
+            {
+                "pagePath": "pages/transport/index",
+                "text": "运输",
+                "iconPath": "static/transport.png",
+                "selectedIconPath": "static/transportActive.png"
+            },
+            {
+                "pagePath": "pages/my/index",
+                "text": "我的",
+                "iconPath": "static/wode.png",
+                "selectedIconPath": "static/wodeActive.png"
+            }
+        ]
+    }
+}

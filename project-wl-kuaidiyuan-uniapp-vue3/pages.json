@@ -1,0 +1,90 @@
+{
+    "pages": [
+        {
+            "path": "pages/pickup/index",
+            "style": {
+                "enablePullDownRefresh": true,
+                "navigationBarTitleText": "揽收任务",
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/delivery/index",
+            "style": {
+                "enablePullDownRefresh": true,
+                "navigationBarTitleText": "派件任务",
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/my/index",
+            "style": {
+                "navigationBarTitleText": "我的",
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/login/index",
+            "style": {
+                "enablePullDownRefresh": false,
+                "navigationBarTitleText": "登录",
+                "navigationStyle": "custom"
+            }
+        }
+    ],
+    "subPackages": [
+        {
+            "root": "subPages",
+            "pages": [
+                {
+                    "path": "pickup-detail/index",
+                    "style": {
+                        "navigationStyle": "custom",
+                        "navigationBarTitleText": "揽收详情",
+                        "enablePullDownRefresh": false
+                    }
+                },
+                {
+                    "path": "delivery-detail/index",
+                    "style": {
+                        "navigationStyle": "custom",
+                        "navigationBarTitleText": "派件详情",
+                        "enablePullDownRefresh": false
+                    }
+                }
+            ]
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "快递员工作台",
+        "backgroundColor": "#F8F8F8",
+        "onReachBottomDistance": 50,
+        "enablePullDownRefresh": true
+    },
+    "tabBar": {
+        "borderStyle": "black",
+        "color": "#000000",
+        "selectedColor": "#E94739",
+        "list": [
+            {
+                "pagePath": "pages/pickup/index",
+                "text": "揽收",
+                "iconPath": "static/pickup.png",
+                "selectedIconPath": "static/pickupActive.png"
+            },
+            {
+                "pagePath": "pages/delivery/index",
+                "text": "派件",
+                "iconPath": "static/delivery.png",
+                "selectedIconPath": "static/deliveryActive.png"
+            },
+            {
+                "pagePath": "pages/my/index",
+                "text": "我的",
+                "iconPath": "static/wode.png",
+                "selectedIconPath": "static/wodeActive.png"
+            }
+        ]
+    }
+}

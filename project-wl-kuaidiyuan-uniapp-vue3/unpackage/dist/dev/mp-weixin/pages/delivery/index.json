@@ -1,0 +1,8 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "派件任务",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "task-list": "./components/taskList"
+  }
+}

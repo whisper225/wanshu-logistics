@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "回车登记",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "nav-bar": "../../components/Navbar/index"
+  }
+}

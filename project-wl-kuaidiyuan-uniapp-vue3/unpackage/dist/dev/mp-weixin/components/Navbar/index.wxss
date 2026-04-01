@@ -1,0 +1,18 @@
+.NavBar.data-v-e4fdf528 {
+  position: relative;
+  background-color: white;
+}
+.NavBar .title.data-v-e4fdf528 {
+  font-weight: bold;
+  font-size: 32rpx;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.NavBar .navbar-image.data-v-e4fdf528 {
+  width: 40rpx;
+  height: 40rpx;
+  position: absolute;
+  left: 26rpx;
+}
